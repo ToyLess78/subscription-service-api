@@ -1,4 +1,5 @@
 import axios from "axios"
+import type { WeatherData } from "../models/weather"
 
 // Define the response type for the weather API
 interface WeatherApiResponse {
@@ -16,19 +17,6 @@ interface WeatherApiResponse {
     }
     humidity: number
   }
-}
-
-// Define our simplified weather response
-export interface WeatherData {
-  city: string
-  country: string
-  temperature: {
-    celsius: number
-    fahrenheit: number
-  }
-  humidity: number
-  description: string
-  icon: string
 }
 
 export class WeatherService {

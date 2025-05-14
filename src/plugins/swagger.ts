@@ -5,7 +5,7 @@ import fastifyPlugin from "fastify-plugin"
 
 const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifySwagger, {
-    swagger: {
+    openapi: {
       info: {
         title: "Weather Subscription API",
         description: "API for retrieving weather data and managing subscriptions",
@@ -15,14 +15,21 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
         url: "https://swagger.io",
         description: "Find more info here",
       },
-      host: `${fastify.config.HOST}:${fastify.config.PORT}`,
-      schemes: ["http"],
-      consumes: ["application/json"],
-      produces: ["application/json"],
+      servers: [
+        {
+          url: `http://${fastify.config.HOST}:${fastify.config.PORT}`,
+          description: "Development server",
+        },
+      ],
       tags: [
         { name: "weather", description: "Weather related endpoints" },
         { name: "system", description: "System related endpoints" },
       ],
+      components: {
+        schemas: {
+          // These will be populated automatically from the schema registry
+        },
+      },
     },
   })
 

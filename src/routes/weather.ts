@@ -28,62 +28,15 @@ const weatherRoutes: FastifyPluginAsync = async (fastify) => {
       response: {
         200: {
           description: "Successful response with weather data",
-          type: "object",
-          properties: {
-            city: {
-              type: "string",
-              description: "Name of the city",
-            },
-            country: {
-              type: "string",
-              description: "Country where the city is located",
-            },
-            temperature: {
-              type: "object",
-              properties: {
-                celsius: {
-                  type: "number",
-                  description: "Temperature in Celsius",
-                },
-                fahrenheit: {
-                  type: "number",
-                  description: "Temperature in Fahrenheit",
-                },
-              },
-            },
-            humidity: {
-              type: "number",
-              description: "Humidity percentage",
-            },
-            description: {
-              type: "string",
-              description: "Text description of the weather conditions",
-            },
-            icon: {
-              type: "string",
-              description: "URL to the weather condition icon",
-            },
-          },
+          $ref: "weather#",
         },
         400: {
           description: "Bad request - Missing or invalid city parameter",
-          type: "object",
-          properties: {
-            error: {
-              type: "string",
-              description: "Error message",
-            },
-          },
+          $ref: "errorResponse#",
         },
         500: {
           description: "Server error",
-          type: "object",
-          properties: {
-            error: {
-              type: "string",
-              description: "Error message",
-            },
-          },
+          $ref: "errorResponse#",
         },
       },
     },

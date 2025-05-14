@@ -7,9 +7,10 @@ dotenv.config()
 // Import plugins
 import config from "./utils/config"
 import db from "./db"
-import routes from "./routes"
-import staticPlugin from "./plugins/static"
+import schemasPlugin from "./plugins/schemas"
 import swaggerPlugin from "./plugins/swagger"
+import staticPlugin from "./plugins/static"
+import routes from "./routes"
 
 // Create Fastify instance
 const fastify = Fastify({
@@ -27,7 +28,10 @@ const start = async () => {
     // Register database plugin
     await fastify.register(db)
 
-    // Register Swagger plugin
+    // Register schemas plugin (must be before swagger and routes)
+    await fastify.register(schemasPlugin)
+
+    // Register Swagger plugin (must be before routes)
     await fastify.register(swaggerPlugin)
 
     // Register static files plugin
