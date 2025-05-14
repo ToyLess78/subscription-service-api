@@ -9,6 +9,7 @@ import config from "./utils/config"
 import db from "./db"
 import routes from "./routes"
 import staticPlugin from "./plugins/static"
+import swaggerPlugin from "./plugins/swagger"
 
 // Create Fastify instance
 const fastify = Fastify({
@@ -26,6 +27,9 @@ const start = async () => {
     // Register database plugin
     await fastify.register(db)
 
+    // Register Swagger plugin
+    await fastify.register(swaggerPlugin)
+
     // Register static files plugin
     await fastify.register(staticPlugin)
 
@@ -39,6 +43,7 @@ const start = async () => {
     })
 
     console.log(`Server is running on ${fastify.config.HOST}:${fastify.config.PORT}`)
+    console.log(`API documentation available at http://${fastify.config.HOST}:${fastify.config.PORT}/documentation`)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)
