@@ -8,6 +8,7 @@ dotenv.config()
 import config from "./utils/config"
 import db from "./db"
 import routes from "./routes"
+import staticPlugin from "./plugins/static"
 
 // Create Fastify instance
 const fastify = Fastify({
@@ -25,7 +26,10 @@ const start = async () => {
     // Register database plugin
     await fastify.register(db)
 
-    // Register routes
+    // Register static files plugin
+    await fastify.register(staticPlugin)
+
+    // Register API routes
     await fastify.register(routes, { prefix: `/api/${fastify.config.API_VERSION}` })
 
     // Start the server
