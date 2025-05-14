@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fastify/env": "^4.3.0",
+    "axios": "^1.6.2",
     "fastify": "^4.24.3",
     "fastify-plugin": "^4.5.1"
   },
