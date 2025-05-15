@@ -16,12 +16,23 @@ const routes: FastifyPluginAsync = async (fastify) => {
           properties: {
             status: { type: "string" },
             timestamp: { type: "string" },
+            database: {
+              type: "object",
+              properties: {
+                connected: { type: "boolean" },
+                lastConnected: { type: "string", nullable: true },
+                connectionAttempts: { type: "number" },
+              },
+            },
           },
         },
       },
     },
     handler: async () => {
-      return { status: "ok", timestamp: new Date().toISOString() }
+      return {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+      }
     },
   })
 

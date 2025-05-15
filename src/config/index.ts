@@ -35,6 +35,14 @@ const schema = {
       type: "string",
       default: "true",
     },
+    DATABASE_URL: {
+      type: "string",
+      default: "",
+    },
+    DATABASE_CONNECTION_TIMEOUT: {
+      type: "string",
+      default: "5000", // 5 seconds
+    },
   },
 }
 
@@ -69,6 +77,8 @@ declare module "fastify" {
       WEATHER_API_KEY: string
       LOG_LEVEL: string
       PRETTY_LOGS: string
+      DATABASE_URL: string
+      DATABASE_CONNECTION_TIMEOUT: string
     }
   }
 }

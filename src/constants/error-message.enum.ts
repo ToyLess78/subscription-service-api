@@ -31,4 +31,9 @@ export enum ErrorMessage {
   // Database errors
   DATABASE_CONNECTION_ERROR = "Failed to connect to database",
   DATABASE_QUERY_ERROR = "Database query failed",
+  DATABASE_URL_MISSING = "Database URL is missing or invalid",
+  DATABASE_CONNECTION_TIMEOUT = "Database connection timed out",
+  DATABASE_ALREADY_CONNECTED = "Database is already connected",
+  DATABASE_NOT_CONNECTED = "Database is not connected",
+  DATABASE_DISCONNECTION_ERROR = "Failed to disconnect from database",
 }

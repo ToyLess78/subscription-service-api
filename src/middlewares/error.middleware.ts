@@ -25,7 +25,7 @@ const errorMiddleware: FastifyPluginAsync = async (fastify) => {
     }
 
     // Handle validation errors from Fastify
-    if (error.validation) {
+    if ("validation" in error && error.validation) {
       const validationError = {
         msg: ErrorMessage.VALIDATION_ERROR,
         details: error.validation,
@@ -44,7 +44,7 @@ const errorMiddleware: FastifyPluginAsync = async (fastify) => {
 
     fastify.log.error({
       msg: "Unhandled server error",
-      originalError: formatError(error, isDev),
+      originalError: formatError(error instanceof Error ? error : new Error(String(error)), isDev),
       handledAs: formatError(serverError),
     })
 

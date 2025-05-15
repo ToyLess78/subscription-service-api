@@ -1,10 +1,26 @@
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify"
 import fastifyPlugin from "fastify-plugin"
 import { randomUUID } from "crypto"
+import { redactSensitiveInfo, type RecordWithNestedValues } from "../utils/logger.utils"
 
 interface LoggerOptions {
   prettyPrint: boolean
   redactPaths?: string[]
+}
+
+// Define the serializer types
+interface LogSerializers {
+  req?: (request: FastifyRequest) => Record<string, unknown>
+  res?: (reply: FastifyReply) => Record<string, unknown>
+  err?: (error: Error) => Record<string, unknown>
+  [key: string]: ((value: any) => Record<string, unknown>) | undefined
+}
+
+// Extend the FastifyBaseLogger interface to include serializers
+declare module "fastify" {
+  interface FastifyBaseLogger {
+    serializers?: LogSerializers
+  }
 }
 
 const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (fastify, options) => {
@@ -15,13 +31,16 @@ const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (fastify, options)
     // Override the default logger serializers for prettier output
     fastify.log.serializers = {
       req: (request: FastifyRequest) => {
-        return {
+        const reqInfo: RecordWithNestedValues = {
           method: request.method,
           url: request.url,
           hostname: request.hostname,
           remoteAddress: request.ip,
           remotePort: request.socket.remotePort,
         }
+
+        // Redact sensitive information
+        return redactSensitiveInfo(reqInfo, redactPaths)
       },
       res: (reply: FastifyReply) => {
         return {

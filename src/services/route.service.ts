@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify"
-import { ApiPath, buildApiPath } from "../constants/api-path.enum"
+import { ApiPath } from "../constants/api-path.enum"
 
 export interface IRouteService {
   getRouteMap(): Record<string, string[]>
@@ -97,7 +97,7 @@ export class RouteService implements IRouteService {
 
       this.fastify.log.info(`=== API Routes ===\n${routesTable}`)
       this.fastify.log.info(`API Documentation: ${baseUrl}${ApiPath.DOCUMENTATION}`)
-      this.fastify.log.info(`Health Check: ${baseUrl}${buildApiPath(this.fastify.config.API_VERSION, ApiPath.HEALTH)}`)
+      this.fastify.log.info(`Health Check: ${baseUrl}/api/${this.fastify.config.API_VERSION}${ApiPath.HEALTH}`)
     } catch (error) {
       this.fastify.log.error("Failed to log routes", error)
     }

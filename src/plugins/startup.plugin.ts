@@ -12,6 +12,14 @@ const startupPlugin: FastifyPluginAsync = async (fastify) => {
       fastify.log.info(`Version: ${fastify.config.API_VERSION}`)
       fastify.log.info(`Server listening on ${fastify.config.HOST}:${fastify.config.PORT}`)
 
+      // Log database status
+      const dbStatus = fastify.db.getStatus()
+      fastify.log.info(`Database status: ${fastify.db.isConnected() ? "Connected" : "Disconnected"}`)
+      if (dbStatus.lastConnected) {
+        fastify.log.info(`Last connected at: ${dbStatus.lastConnected.toISOString()}`)
+      }
+      fastify.log.info(`Connection attempts: ${dbStatus.connectionAttempts}`)
+
       // Log all registered routes
       const routeService = new RouteService(fastify)
       routeService.logAllRoutes()
