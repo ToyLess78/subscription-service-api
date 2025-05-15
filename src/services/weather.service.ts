@@ -1,7 +1,9 @@
 import axios from "axios"
 import type { WeatherData, WeatherApiResponse } from "../models/weather.model"
-import { WEATHER_API } from "../config/constants"
+import { WEATHER_API } from "../constants/weather-api.constants"
 import { WeatherApiError, InvalidCityError, UnauthorizedError, InternalServerError } from "../utils/errors"
+import { ErrorMessage } from "../constants/error-message.enum"
+import { HttpStatus } from "../constants/http-status.enum"
 
 export interface IWeatherService {
   getCurrentWeather(city: string): Promise<WeatherData>
@@ -41,19 +43,22 @@ export class WeatherService implements IWeatherService {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         // Handle API errors
-        if (error.response.status === 400) {
+        if (error.response.status === HttpStatus.BAD_REQUEST) {
           throw new InvalidCityError(city)
-        } else if (error.response.status === 401 || error.response.status === 403) {
-          throw new UnauthorizedError("Invalid or unauthorized API key")
+        } else if (
+          error.response.status === HttpStatus.UNAUTHORIZED ||
+          error.response.status === HttpStatus.FORBIDDEN
+        ) {
+          throw new UnauthorizedError(ErrorMessage.WEATHER_API_UNAUTHORIZED)
         } else {
           throw new WeatherApiError(
-            `Weather API error: ${error.response.data?.error?.message || "Unknown error"}`,
+            `${ErrorMessage.WEATHER_API_ERROR}: ${error.response.data?.error?.message || "Unknown error"}`,
             error.response.status,
           )
         }
       }
       // Handle network errors or other issues
-      throw new InternalServerError("Failed to fetch weather data")
+      throw new InternalServerError(ErrorMessage.FAILED_TO_FETCH_WEATHER)
     }
   }
 }

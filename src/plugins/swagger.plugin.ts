@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify"
 import fastifySwagger from "@fastify/swagger"
 import fastifySwaggerUi from "@fastify/swagger-ui"
 import fastifyPlugin from "fastify-plugin"
+import { ApiPath } from "../constants/api-path.enum"
 
 const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifySwagger, {
@@ -37,7 +38,7 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
   })
 
   await fastify.register(fastifySwaggerUi, {
-    routePrefix: "/documentation",
+    routePrefix: ApiPath.DOCUMENTATION,
     uiConfig: {
       docExpansion: "list",
       deepLinking: false,

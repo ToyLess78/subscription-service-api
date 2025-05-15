@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify"
 import { WeatherController } from "../controllers/weather.controller"
 import { WeatherService } from "../services/weather.service"
 import { weatherRequestSchema } from "../models/weather.schema"
+import { ApiPath } from "../constants/api-path.enum"
 
 const weatherRoutes: FastifyPluginAsync = async (fastify) => {
   // Create service and controller instances
@@ -9,7 +10,7 @@ const weatherRoutes: FastifyPluginAsync = async (fastify) => {
   const weatherController = new WeatherController(weatherService)
 
   // GET /weather endpoint
-  fastify.get("/weather", {
+  fastify.get(ApiPath.WEATHER, {
     schema: {
       tags: ["weather"],
       summary: "Get current weather by city",

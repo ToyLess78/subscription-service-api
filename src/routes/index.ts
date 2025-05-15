@@ -1,9 +1,10 @@
 import type { FastifyPluginAsync } from "fastify"
 import weatherRoutes from "./weather.routes"
+import { ApiPath } from "../constants/api-path.enum"
 
 const routes: FastifyPluginAsync = async (fastify) => {
   // Health check route
-  fastify.get("/health", {
+  fastify.get(ApiPath.HEALTH, {
     schema: {
       tags: ["system"],
       summary: "Health check endpoint",
@@ -15,17 +16,28 @@ const routes: FastifyPluginAsync = async (fastify) => {
           properties: {
             status: { type: "string" },
             timestamp: { type: "string" },
+            database: {
+              type: "object",
+              properties: {
+                connected: { type: "boolean" },
+                lastConnected: { type: "string", nullable: true },
+                connectionAttempts: { type: "number" },
+              },
+            },
           },
         },
       },
     },
     handler: async () => {
-      return { status: "ok", timestamp: new Date().toISOString() }
+      return {
+        status: "ok",
+        timestamp: new Date().toISOString(),
+      }
     },
   })
 
   // API version route
-  fastify.get("/", {
+  fastify.get(ApiPath.STATIC, {
     schema: {
       tags: ["system"],
       summary: "API information",

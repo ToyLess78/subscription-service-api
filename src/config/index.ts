@@ -26,6 +26,23 @@ const schema = {
     WEATHER_API_KEY: {
       type: "string",
     },
+    LOG_LEVEL: {
+      type: "string",
+      default: "info",
+      enum: ["fatal", "error", "warn", "info", "debug", "trace"],
+    },
+    PRETTY_LOGS: {
+      type: "string",
+      default: "true",
+    },
+    DATABASE_URL: {
+      type: "string",
+      default: "",
+    },
+    DATABASE_CONNECTION_TIMEOUT: {
+      type: "string",
+      default: "5000", // 5 seconds
+    },
   },
 }
 
@@ -40,6 +57,11 @@ const options = {
 // Create a plugin to load and validate environment variables
 const configPlugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifyEnv, options)
+
+  // Update logger level based on config
+  if (fastify.config.LOG_LEVEL) {
+    fastify.log.level = fastify.config.LOG_LEVEL
+  }
 }
 
 export default fastifyPlugin(configPlugin)
@@ -53,6 +75,10 @@ declare module "fastify" {
       NODE_ENV: string
       API_VERSION: string
       WEATHER_API_KEY: string
+      LOG_LEVEL: string
+      PRETTY_LOGS: string
+      DATABASE_URL: string
+      DATABASE_CONNECTION_TIMEOUT: string
     }
   }
 }
