@@ -53,7 +53,8 @@ export class DatabaseService implements IDatabaseClient {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
       this.logger.error("Database connection failed", err)
-      throw new DatabaseError(`${ErrorMessage.DATABASE_CONNECTION_ERROR}: ${err.message}`, { cause: err })
+      // Fix: Use a standard error message instead of template literals
+      throw new DatabaseError(ErrorMessage.DATABASE_CONNECTION_ERROR, { cause: err })
     }
   }
 
@@ -78,7 +79,8 @@ export class DatabaseService implements IDatabaseClient {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
       this.logger.error("Database disconnection failed", err)
-      throw new DatabaseError(`${ErrorMessage.DATABASE_DISCONNECTION_ERROR}: ${err.message}`, { cause: err })
+      // Fix: Use a standard error message instead of template literals
+      throw new DatabaseError(ErrorMessage.DATABASE_DISCONNECTION_ERROR, { cause: err })
     }
   }
 
@@ -121,7 +123,8 @@ export class DatabaseService implements IDatabaseClient {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
       this.logger.error("Query execution failed", err)
-      throw new DatabaseError(`${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`, { cause: err })
+      // Fix: Use a standard error message instead of template literals
+      throw new DatabaseError(ErrorMessage.DATABASE_QUERY_ERROR, { cause: err })
     }
   }
 

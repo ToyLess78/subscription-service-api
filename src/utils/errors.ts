@@ -23,31 +23,31 @@ export class AppError extends Error {
 
 // Specific error types
 export class BadRequestError extends AppError {
-  constructor(message = ErrorMessage.BAD_REQUEST, options?: { cause?: Error }) {
+  constructor(message: string | ErrorMessage = ErrorMessage.BAD_REQUEST, options?: { cause?: Error }) {
     super(message, HttpStatus.BAD_REQUEST, options)
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(message = ErrorMessage.NOT_FOUND, options?: { cause?: Error }) {
+  constructor(message: string | ErrorMessage = ErrorMessage.NOT_FOUND, options?: { cause?: Error }) {
     super(message, HttpStatus.NOT_FOUND, options)
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = ErrorMessage.UNAUTHORIZED, options?: { cause?: Error }) {
+  constructor(message: string | ErrorMessage = ErrorMessage.UNAUTHORIZED, options?: { cause?: Error }) {
     super(message, HttpStatus.UNAUTHORIZED, options)
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = ErrorMessage.FORBIDDEN, options?: { cause?: Error }) {
+  constructor(message: string | ErrorMessage = ErrorMessage.FORBIDDEN, options?: { cause?: Error }) {
     super(message, HttpStatus.FORBIDDEN, options)
   }
 }
 
 export class InternalServerError extends AppError {
-  constructor(message = ErrorMessage.INTERNAL_SERVER_ERROR, options?: { cause?: Error }) {
+  constructor(message: string | ErrorMessage = ErrorMessage.INTERNAL_SERVER_ERROR, options?: { cause?: Error }) {
     super(message, HttpStatus.INTERNAL_SERVER_ERROR, { isOperational: false, ...options })
   }
 }
@@ -55,9 +55,9 @@ export class InternalServerError extends AppError {
 // Weather-specific errors
 export class WeatherApiError extends AppError {
   constructor(
-    message = ErrorMessage.WEATHER_API_ERROR,
-    statusCode = HttpStatus.INTERNAL_SERVER_ERROR,
-    options?: { cause?: Error },
+      message: string | ErrorMessage = ErrorMessage.WEATHER_API_ERROR,
+      statusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+      options?: { cause?: Error },
   ) {
     super(message, statusCode, options)
   }
@@ -65,13 +65,15 @@ export class WeatherApiError extends AppError {
 
 export class InvalidCityError extends BadRequestError {
   constructor(city?: string, options?: { cause?: Error }) {
-    super(`${ErrorMessage.INVALID_CITY}${city ? `: ${city}` : ""}`, options)
+    // Fix: Use string concatenation instead of template literals
+    const message = city ? `${ErrorMessage.INVALID_CITY}: ${city}` : ErrorMessage.INVALID_CITY
+    super(message, options)
   }
 }
 
 // Database-specific errors
 export class DatabaseError extends AppError {
-  constructor(message = ErrorMessage.DATABASE_CONNECTION_ERROR, options?: { cause?: Error }) {
+  constructor(message: string | ErrorMessage = ErrorMessage.DATABASE_CONNECTION_ERROR, options?: { cause?: Error }) {
     super(message, HttpStatus.INTERNAL_SERVER_ERROR, options)
   }
 }

@@ -46,15 +46,15 @@ export class WeatherService implements IWeatherService {
         if (error.response.status === HttpStatus.BAD_REQUEST) {
           throw new InvalidCityError(city)
         } else if (
-          error.response.status === HttpStatus.UNAUTHORIZED ||
-          error.response.status === HttpStatus.FORBIDDEN
+            error.response.status === HttpStatus.UNAUTHORIZED ||
+            error.response.status === HttpStatus.FORBIDDEN
         ) {
           throw new UnauthorizedError(ErrorMessage.WEATHER_API_UNAUTHORIZED)
         } else {
-          throw new WeatherApiError(
-            `${ErrorMessage.WEATHER_API_ERROR}: ${error.response.data?.error?.message || "Unknown error"}`,
-            error.response.status,
-          )
+          // Fix: Use ErrorMessage enum for the base message
+          const errorDetails = error.response.data?.error?.message ? `: ${error.response.data.error.message}` : ""
+          const errorMessage = `${ErrorMessage.WEATHER_API_ERROR}${errorDetails}`
+          throw new WeatherApiError(errorMessage, error.response.status)
         }
       }
       // Handle network errors or other issues

@@ -2,6 +2,13 @@ import type { FastifyPluginAsync } from "fastify"
 import weatherRoutes from "./weather.routes"
 import { ApiPath } from "../constants/api-path.enum"
 
+// Define the health check response type
+export interface HealthCheckResponse {
+  status: string
+  timestamp: string
+  [key: string]: unknown
+}
+
 const routes: FastifyPluginAsync = async (fastify) => {
   // Health check route
   fastify.get(ApiPath.HEALTH, {
@@ -28,7 +35,7 @@ const routes: FastifyPluginAsync = async (fastify) => {
         },
       },
     },
-    handler: async () => {
+    handler: async (): Promise<HealthCheckResponse> => {
       return {
         status: "ok",
         timestamp: new Date().toISOString(),
