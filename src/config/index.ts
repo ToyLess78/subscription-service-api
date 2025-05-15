@@ -5,7 +5,7 @@ import fastifyPlugin from "fastify-plugin"
 // Define the schema for environment variables
 const schema = {
   type: "object",
-  required: ["PORT", "HOST", "WEATHER_API_KEY"],
+  required: ["PORT", "HOST", "WEATHER_API_KEY", "DATABASE_URL"],
   properties: {
     PORT: {
       type: "string",
@@ -37,11 +37,25 @@ const schema = {
     },
     DATABASE_URL: {
       type: "string",
-      default: "",
     },
     DATABASE_CONNECTION_TIMEOUT: {
       type: "string",
       default: "5000", // 5 seconds
+    },
+    RESEND_API_KEY: {
+      type: "string",
+    },
+    EMAIL_FROM: {
+      type: "string",
+      default: "onboarding@resend.dev",
+    },
+    BASE_URL: {
+      type: "string",
+      default: "http://localhost:3000",
+    },
+    TOKEN_EXPIRY: {
+      type: "string",
+      default: "86400", // 24 hours in seconds
     },
   },
 }
@@ -79,6 +93,10 @@ declare module "fastify" {
       PRETTY_LOGS: string
       DATABASE_URL: string
       DATABASE_CONNECTION_TIMEOUT: string
+      RESEND_API_KEY: string
+      EMAIL_FROM: string
+      BASE_URL: string
+      TOKEN_EXPIRY: string
     }
   }
 }

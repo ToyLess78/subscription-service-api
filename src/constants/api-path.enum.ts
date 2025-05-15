@@ -13,6 +13,11 @@ export enum ApiPath {
   WEATHER = "/weather",
   WEATHER_CURRENT = "/weather/current",
 
+  // Subscription paths
+  SUBSCRIBE = "/subscribe",
+  CONFIRM = "/confirm",
+  UNSUBSCRIBE = "/unsubscribe",
+
   // System paths
   HEALTH = "/health",
   DOCUMENTATION = "/documentation",
