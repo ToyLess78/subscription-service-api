@@ -2,6 +2,7 @@ import type { FastifyRequest, FastifyReply } from "fastify"
 import type { IWeatherService } from "../services/weather.service"
 import type { WeatherRequestDto } from "../models/weather.model"
 import { BadRequestError } from "../utils/errors"
+import { ErrorMessage } from "../constants/error-message.enum"
 
 export interface IWeatherController {
   getCurrentWeather(request: FastifyRequest<{ Querystring: WeatherRequestDto }>, reply: FastifyReply): Promise<void>
@@ -21,7 +22,7 @@ export class WeatherController implements IWeatherController {
     const { city } = request.query
 
     if (!city) {
-      throw new BadRequestError("City parameter is required")
+      throw new BadRequestError(ErrorMessage.MISSING_CITY)
     }
 
     const weatherData = await this.weatherService.getCurrentWeather(city)

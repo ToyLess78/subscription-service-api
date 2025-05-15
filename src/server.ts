@@ -14,6 +14,7 @@ import loggerPlugin from "./plugins/logger.plugin"
 import startupPlugin from "./plugins/startup.plugin"
 import errorMiddleware from "./middlewares/error.middleware"
 import routes from "./routes"
+import { buildApiPath } from "./constants/api-path.enum"
 
 // Create Fastify instance with logger configuration
 const fastify = Fastify({
@@ -58,8 +59,10 @@ const start = async () => {
     // Register static files plugin
     await fastify.register(staticPlugin)
 
-    // Register API routes
-    await fastify.register(routes, { prefix: `/api/${fastify.config.API_VERSION}` })
+    // Register API routes with dynamic prefix based on config
+    await fastify.register(routes, {
+      prefix: buildApiPath(fastify.config.API_VERSION, ""),
+    })
 
     // Register startup plugin (must be after routes)
     await fastify.register(startupPlugin)
