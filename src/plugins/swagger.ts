@@ -15,12 +15,14 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
         url: "https://swagger.io",
         description: "Find more info here",
       },
-      servers: [
-        {
-          url: `http://${fastify.config.HOST}:${fastify.config.PORT}`,
-          description: "Development server",
-        },
-      ],
+      servers: process.env.NODE_ENV === "development"
+          ? [
+            {
+              url: `http://${fastify.config.HOST}:${fastify.config.PORT}`,
+              description: "Dev server",
+            },
+          ]
+          : [],
       tags: [
         { name: "weather", description: "Weather related endpoints" },
         { name: "system", description: "System related endpoints" },
