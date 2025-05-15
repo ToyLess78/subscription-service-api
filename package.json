@@ -18,7 +18,9 @@
     "axios": "^1.6.2",
     "fastify": "^4.24.3",
     "fastify-plugin": "^4.5.1",
-    "pg": "^8.16.0"
+    "pg": "^8.16.0",
+    "pino": "^8.14.1",
+    "pino-pretty": "^10.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

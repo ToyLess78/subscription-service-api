@@ -10,14 +10,25 @@ import dbPlugin from "./plugins/db.plugin"
 import schemasPlugin from "./plugins/schemas.plugin"
 import swaggerPlugin from "./plugins/swagger.plugin"
 import staticPlugin from "./plugins/static.plugin"
+import loggerPlugin from "./plugins/logger.plugin"
+import startupPlugin from "./plugins/startup.plugin"
 import errorMiddleware from "./middlewares/error.middleware"
 import routes from "./routes"
 
-// Create Fastify instance
+// Create Fastify instance with logger configuration
 const fastify = Fastify({
   logger: {
     level: process.env.NODE_ENV === "development" ? "debug" : "info",
+    transport: {
+      target: "pino-pretty",
+      options: {
+        translateTime: "HH:MM:ss Z",
+        ignore: "pid,hostname",
+        colorize: true,
+      },
+    },
   },
+  disableRequestLogging: true, // We'll handle request logging in our logger plugin
 })
 
 // Register plugins
@@ -25,6 +36,12 @@ const start = async () => {
   try {
     // Register configuration plugin
     await fastify.register(config)
+
+    // Register custom logger plugin
+    await fastify.register(loggerPlugin, {
+      prettyPrint: fastify.config.NODE_ENV === "development",
+      redactPaths: ["req.headers.authorization", "req.headers.cookie"],
+    })
 
     // Register error handling middleware
     await fastify.register(errorMiddleware)
@@ -44,14 +61,14 @@ const start = async () => {
     // Register API routes
     await fastify.register(routes, { prefix: `/api/${fastify.config.API_VERSION}` })
 
+    // Register startup plugin (must be after routes)
+    await fastify.register(startupPlugin)
+
     // Start the server
     await fastify.listen({
       port: Number.parseInt(fastify.config.PORT, 10),
       host: fastify.config.HOST,
     })
-
-    console.log(`Server is running on ${fastify.config.HOST}:${fastify.config.PORT}`)
-    console.log(`API documentation available at http://${fastify.config.HOST}:${fastify.config.PORT}/documentation`)
   } catch (err) {
     fastify.log.error(err)
     process.exit(1)
@@ -60,7 +77,13 @@ const start = async () => {
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
-  console.error("Unhandled rejection:", err)
+  fastify.log.error("Unhandled rejection:", err)
+  process.exit(1)
+})
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err)
   process.exit(1)
 })
 
