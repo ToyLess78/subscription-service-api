@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify"
 import fastifyPlugin from "fastify-plugin"
-import { temperatureSchema, weatherSchema, errorResponseSchema } from "@/models/weather.schema"
+import { temperatureSchema, weatherSchema, errorResponseSchema } from "../models/weather.schema"
 
 const schemasPlugin: FastifyPluginAsync = async (fastify) => {
   // Register schemas

@@ -1,7 +1,7 @@
 import axios from "axios"
-import type { WeatherData, WeatherApiResponse } from "@/models/weather.model"
-import { WEATHER_API } from "@/config/constants"
-import { WeatherApiError, InvalidCityError, UnauthorizedError, InternalServerError } from "@/utils/errors"
+import type { WeatherData, WeatherApiResponse } from "../models/weather.model"
+import { WEATHER_API } from "../config/constants"
+import { WeatherApiError, InvalidCityError, UnauthorizedError, InternalServerError } from "../utils/errors"
 
 export interface IWeatherService {
   getCurrentWeather(city: string): Promise<WeatherData>

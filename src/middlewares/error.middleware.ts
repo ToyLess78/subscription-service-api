@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify"
 import fastifyPlugin from "fastify-plugin"
-import { AppError, InternalServerError } from "@/utils/errors"
+import { AppError, InternalServerError } from "../utils/errors"
 
 const errorMiddleware: FastifyPluginAsync = async (fastify) => {
   // Add a custom error handler
