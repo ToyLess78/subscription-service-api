@@ -31,10 +31,10 @@ const schema = {
 
 // Define the options for the plugin
 const options = {
-  confKey: "config", // This is the key under which the config will be stored in the fastify instance
+  confKey: "config",
   schema: schema,
-  dotenv: true, // Load .env file
-  data: process.env, // Use process.env as data source
+  dotenv: true,
+  data: process.env,
 }
 
 // Create a plugin to load and validate environment variables
