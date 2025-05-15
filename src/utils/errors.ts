@@ -55,9 +55,9 @@ export class InternalServerError extends AppError {
 // Weather-specific errors
 export class WeatherApiError extends AppError {
   constructor(
-      message: string | ErrorMessage = ErrorMessage.WEATHER_API_ERROR,
-      statusCode = HttpStatus.INTERNAL_SERVER_ERROR,
-      options?: { cause?: Error },
+    message: string | ErrorMessage = ErrorMessage.WEATHER_API_ERROR,
+    statusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+    options?: { cause?: Error },
   ) {
     super(message, statusCode, options)
   }
@@ -75,5 +75,47 @@ export class InvalidCityError extends BadRequestError {
 export class DatabaseError extends AppError {
   constructor(message: string | ErrorMessage = ErrorMessage.DATABASE_CONNECTION_ERROR, options?: { cause?: Error }) {
     super(message, HttpStatus.INTERNAL_SERVER_ERROR, options)
+  }
+}
+
+// Email-specific errors
+export class EmailError extends AppError {
+  constructor(message: string | ErrorMessage = ErrorMessage.EMAIL_SENDING_ERROR, options?: { cause?: Error }) {
+    super(message, HttpStatus.INTERNAL_SERVER_ERROR, options)
+  }
+}
+
+// Subscription-specific errors
+export class SubscriptionError extends AppError {
+  constructor(
+    message: string | ErrorMessage = ErrorMessage.SUBSCRIPTION_NOT_FOUND,
+    statusCode = HttpStatus.BAD_REQUEST,
+    options?: { cause?: Error },
+  ) {
+    super(message, statusCode, options)
+  }
+}
+
+export class SubscriptionExistsError extends SubscriptionError {
+  constructor(options?: { cause?: Error }) {
+    super(ErrorMessage.SUBSCRIPTION_ALREADY_EXISTS, HttpStatus.CONFLICT, options)
+  }
+}
+
+export class SubscriptionNotFoundError extends SubscriptionError {
+  constructor(options?: { cause?: Error }) {
+    super(ErrorMessage.SUBSCRIPTION_NOT_FOUND, HttpStatus.NOT_FOUND, options)
+  }
+}
+
+export class InvalidTokenError extends SubscriptionError {
+  constructor(options?: { cause?: Error }) {
+    super(ErrorMessage.INVALID_SUBSCRIPTION_TOKEN, HttpStatus.BAD_REQUEST, options)
+  }
+}
+
+export class ExpiredTokenError extends SubscriptionError {
+  constructor(options?: { cause?: Error }) {
+    super(ErrorMessage.EXPIRED_SUBSCRIPTION_TOKEN, HttpStatus.BAD_REQUEST, options)
   }
 }

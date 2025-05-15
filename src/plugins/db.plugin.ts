@@ -1,8 +1,11 @@
 import type { FastifyPluginAsync } from "fastify"
 import fastifyPlugin from "fastify-plugin"
-import { DatabaseService } from "../db/database.service"
 import type { IDatabaseClient } from "../db/database.interface"
-import { ErrorMessage } from "../constants/error-message.enum"
+import { PrismaService } from "../db/prisma.service"
+import { exec } from "child_process"
+import { promisify } from "util"
+
+const execAsync = promisify(exec)
 
 type DbPluginOptions = {}
 
@@ -14,9 +17,6 @@ interface HealthCheckResponse {
 }
 
 const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (fastify, options) => {
-  const databaseUrl = fastify.config.DATABASE_URL
-  const connectionTimeout = Number.parseInt(fastify.config.DATABASE_CONNECTION_TIMEOUT, 10)
-
   // Create a logger adapter that uses fastify's logger
   const logger = {
     info: (msg: string) => fastify.log.info(`[Database] ${msg}`),
@@ -24,23 +24,29 @@ const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (fastify, options) =
   }
 
   // Initialize the database client
-  const db: IDatabaseClient = new DatabaseService(
-      {
-        url: databaseUrl,
-        connectionTimeout,
-      },
-      logger,
-  )
+  const db: IDatabaseClient = new PrismaService(logger)
 
   // Make the db client available through the fastify instance
   fastify.decorate("db", db)
 
-  // Try to connect to the database
+  // Try to connect to the database and run migrations
   try {
-    if (databaseUrl) {
-      await db.connect()
-    } else {
-      fastify.log.warn(ErrorMessage.DATABASE_URL_MISSING)
+    // Connect to the database
+    await db.connect()
+
+    // Run Prisma migrations
+    logger.info("Running Prisma migrations...")
+    try {
+      // Run Prisma migrations using the CLI
+      const { stdout, stderr } = await execAsync("npx prisma migrate deploy")
+      if (stdout) logger.info(stdout)
+      if (stderr) logger.error(stderr)
+      logger.info("Prisma migrations completed successfully")
+    } catch (migrationError) {
+      logger.error(
+        "Failed to run Prisma migrations",
+        migrationError instanceof Error ? migrationError : new Error(String(migrationError)),
+      )
     }
   } catch (error) {
     // Log the error but don't crash the server

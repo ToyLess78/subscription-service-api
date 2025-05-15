@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify"
 import weatherRoutes from "./weather.routes"
+import subscriptionRoutes from "./subscription.routes"
 import { ApiPath } from "../constants/api-path.enum"
 
 // Define the health check response type
@@ -72,6 +73,9 @@ const routes: FastifyPluginAsync = async (fastify) => {
 
   // Register weather routes
   await fastify.register(weatherRoutes)
+
+  // Register subscription routes
+  await fastify.register(subscriptionRoutes)
 }
 
 export default routes

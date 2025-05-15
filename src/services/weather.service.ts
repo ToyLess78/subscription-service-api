@@ -46,8 +46,8 @@ export class WeatherService implements IWeatherService {
         if (error.response.status === HttpStatus.BAD_REQUEST) {
           throw new InvalidCityError(city)
         } else if (
-            error.response.status === HttpStatus.UNAUTHORIZED ||
-            error.response.status === HttpStatus.FORBIDDEN
+          error.response.status === HttpStatus.UNAUTHORIZED ||
+          error.response.status === HttpStatus.FORBIDDEN
         ) {
           throw new UnauthorizedError(ErrorMessage.WEATHER_API_UNAUTHORIZED)
         } else {
