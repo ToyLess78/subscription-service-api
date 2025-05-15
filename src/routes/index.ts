@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify"
-import weatherRoutes from "./weather"
+import weatherRoutes from "./weather.routes"
 
 const routes: FastifyPluginAsync = async (fastify) => {
   // Health check route
@@ -53,8 +53,6 @@ const routes: FastifyPluginAsync = async (fastify) => {
 
   // Register weather routes
   await fastify.register(weatherRoutes)
-
-  // Add more routes here
 }
 
 export default routes

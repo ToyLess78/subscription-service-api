@@ -1,36 +1,24 @@
 import axios from "axios"
-import type { WeatherData } from "../models/weather"
+import type { WeatherData, WeatherApiResponse } from "@/models/weather.model"
+import { WEATHER_API } from "@/config/constants"
+import { WeatherApiError, InvalidCityError, UnauthorizedError, InternalServerError } from "@/utils/errors"
 
-// Define the response type for the weather API
-interface WeatherApiResponse {
-  location: {
-    name: string
-    region: string
-    country: string
-  }
-  current: {
-    temp_c: number
-    temp_f: number
-    condition: {
-      text: string
-      icon: string
-    }
-    humidity: number
-  }
+export interface IWeatherService {
+  getCurrentWeather(city: string): Promise<WeatherData>
 }
 
-export class WeatherService {
+export class WeatherService implements IWeatherService {
   private apiKey: string
   private baseUrl: string
 
   constructor(apiKey: string) {
     this.apiKey = apiKey
-    this.baseUrl = "https://api.weatherapi.com/v1"
+    this.baseUrl = WEATHER_API.BASE_URL
   }
 
   async getCurrentWeather(city: string): Promise<WeatherData> {
     try {
-      const response = await axios.get<WeatherApiResponse>(`${this.baseUrl}/current.json`, {
+      const response = await axios.get<WeatherApiResponse>(`${this.baseUrl}${WEATHER_API.ENDPOINTS.CURRENT}`, {
         params: {
           key: this.apiKey,
           q: city,
@@ -54,15 +42,18 @@ export class WeatherService {
       if (axios.isAxiosError(error) && error.response) {
         // Handle API errors
         if (error.response.status === 400) {
-          throw new Error("Invalid city name provided")
+          throw new InvalidCityError(city)
         } else if (error.response.status === 401 || error.response.status === 403) {
-          throw new Error("Invalid or unauthorized API key")
+          throw new UnauthorizedError("Invalid or unauthorized API key")
         } else {
-          throw new Error(`Weather API error: ${error.response.data?.error?.message || "Unknown error"}`)
+          throw new WeatherApiError(
+            `Weather API error: ${error.response.data?.error?.message || "Unknown error"}`,
+            error.response.status,
+          )
         }
       }
       // Handle network errors or other issues
-      throw new Error("Failed to fetch weather data")
+      throw new InternalServerError("Failed to fetch weather data")
     }
   }
 }

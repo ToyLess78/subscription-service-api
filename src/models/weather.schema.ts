@@ -1,15 +1,3 @@
-export interface WeatherData {
-  city: string
-  country: string
-  temperature: {
-    celsius: number
-    fahrenheit: number
-  }
-  humidity: number
-  description: string
-  icon: string
-}
-
 // Fastify schema definitions
 export const temperatureSchema = {
   $id: "temperature",
@@ -67,4 +55,15 @@ export const errorResponseSchema = {
       description: "Error message",
     },
   },
+}
+
+export const weatherRequestSchema = {
+  type: "object",
+  properties: {
+    city: {
+      type: "string",
+      description: "Name of the city to get weather for (e.g., London, New York, Tokyo)",
+    },
+  },
+  required: ["city"],
 }

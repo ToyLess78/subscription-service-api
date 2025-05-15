@@ -4,12 +4,13 @@ import dotenv from "dotenv"
 // Load environment variables from .env file
 dotenv.config()
 
-// Import plugins
-import config from "./utils/config"
-import db from "./db"
-import schemasPlugin from "./plugins/schemas"
-import swaggerPlugin from "./plugins/swagger"
-import staticPlugin from "./plugins/static"
+// Import plugins and middleware
+import config from "./config"
+import dbPlugin from "./plugins/db.plugin"
+import schemasPlugin from "./plugins/schemas.plugin"
+import swaggerPlugin from "./plugins/swagger.plugin"
+import staticPlugin from "./plugins/static.plugin"
+import errorMiddleware from "./middlewares/error.middleware"
 import routes from "./routes"
 
 // Create Fastify instance
@@ -25,8 +26,11 @@ const start = async () => {
     // Register configuration plugin
     await fastify.register(config)
 
+    // Register error handling middleware
+    await fastify.register(errorMiddleware)
+
     // Register database plugin
-    await fastify.register(db)
+    await fastify.register(dbPlugin)
 
     // Register schemas plugin (must be before swagger and routes)
     await fastify.register(schemasPlugin)
