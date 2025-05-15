@@ -1,7 +1,7 @@
 import type { FastifyRequest, FastifyReply } from "fastify"
-import type { IWeatherService } from "@/services/weather.service"
-import type { WeatherRequestDto } from "@/models/weather.model"
-import { BadRequestError } from "@/utils/errors"
+import type { IWeatherService } from "../services/weather.service"
+import type { WeatherRequestDto } from "../models/weather.model"
+import { BadRequestError } from "../utils/errors"
 
 export interface IWeatherController {
   getCurrentWeather(request: FastifyRequest<{ Querystring: WeatherRequestDto }>, reply: FastifyReply): Promise<void>
