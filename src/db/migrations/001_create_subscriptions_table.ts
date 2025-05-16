@@ -1,4 +1,4 @@
-import type { IDatabaseClient } from "../database.interface"
+import type { IDatabaseClient } from "../database.interface";
 
 /**
  * Migration to create the subscriptions table
@@ -17,7 +17,7 @@ export async function up(db: IDatabaseClient): Promise<void> {
       updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
       UNIQUE(email, city)
     )
-  `)
+  `);
 }
 
 /**
@@ -26,5 +26,5 @@ export async function up(db: IDatabaseClient): Promise<void> {
 export async function down(db: IDatabaseClient): Promise<void> {
   await db.executeQuery(`
     DROP TABLE IF EXISTS subscriptions
-  `)
+  `);
 }

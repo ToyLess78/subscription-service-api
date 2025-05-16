@@ -1,14 +1,14 @@
-import { randomBytes } from "crypto"
-import { ExpiredTokenError, InvalidTokenError } from "../utils/errors"
+import { randomBytes } from "crypto";
+import { ExpiredTokenError, InvalidTokenError } from "../utils/errors";
 
 /**
  * Token service for generating and validating tokens
  */
 export class TokenService {
-  private tokenExpirySeconds: number
+  private tokenExpirySeconds: number;
 
   constructor(tokenExpirySeconds: number) {
-    this.tokenExpirySeconds = tokenExpirySeconds
+    this.tokenExpirySeconds = tokenExpirySeconds;
   }
 
   /**
@@ -16,9 +16,9 @@ export class TokenService {
    * @returns Token and expiry date
    */
   generateToken(): { token: string; expiry: Date } {
-    const token = randomBytes(32).toString("hex")
-    const expiry = new Date(Date.now() + this.tokenExpirySeconds * 1000)
-    return { token, expiry }
+    const token = randomBytes(32).toString("hex");
+    const expiry = new Date(Date.now() + this.tokenExpirySeconds * 1000);
+    return { token, expiry };
   }
 
   /**
@@ -30,11 +30,11 @@ export class TokenService {
    */
   validateToken(token: string, expiry: Date): void {
     if (!token) {
-      throw new InvalidTokenError()
+      throw new InvalidTokenError();
     }
 
     if (new Date() > expiry) {
-      throw new ExpiredTokenError()
+      throw new ExpiredTokenError();
     }
   }
 }

@@ -1,13 +1,17 @@
-import type { IDatabaseClient, DatabaseConnectionStatus, DatabaseConnectionOptions } from "./database.interface"
-import { DatabaseError } from "../utils/errors"
-import { ErrorMessage } from "../constants/error-message.enum"
+import type {
+  IDatabaseClient,
+  DatabaseConnectionStatus,
+  DatabaseConnectionOptions,
+} from "./database.interface";
+import { DatabaseError } from "../utils/errors";
+import { ErrorMessage } from "../constants/error-message.enum";
 
 /**
  * In-memory storage for simulating a database
  */
 interface InMemoryDatabase {
-  migrations: Array<{ name: string; applied_at: Date }>
-  subscriptions: Array<Record<string, unknown>>
+  migrations: Array<{ name: string; applied_at: Date }>;
+  subscriptions: Array<Record<string, unknown>>;
 }
 
 /**
@@ -15,29 +19,35 @@ interface InMemoryDatabase {
  * This implementation simulates a database with in-memory storage
  */
 export class DatabaseService implements IDatabaseClient {
-  private url: string
-  private connectionTimeout: number
-  private status: DatabaseConnectionStatus
-  private logger: { info: (msg: string) => void; error: (msg: string, err?: Error) => void }
-  private db: InMemoryDatabase
+  private url: string;
+  private connectionTimeout: number;
+  private status: DatabaseConnectionStatus;
+  private logger: {
+    info: (msg: string) => void;
+    error: (msg: string, err?: Error) => void;
+  };
+  private db: InMemoryDatabase;
 
   constructor(
     options: DatabaseConnectionOptions,
-    logger: { info: (msg: string) => void; error: (msg: string, err?: Error) => void },
+    logger: {
+      info: (msg: string) => void;
+      error: (msg: string, err?: Error) => void;
+    },
   ) {
-    this.url = options.url
-    this.connectionTimeout = options.connectionTimeout || 5000
-    this.logger = logger
+    this.url = options.url;
+    this.connectionTimeout = options.connectionTimeout || 5000;
+    this.logger = logger;
     this.status = {
       isConnected: false,
       lastConnected: null,
       connectionAttempts: 0,
-    }
+    };
     // Initialize in-memory database
     this.db = {
       migrations: [],
       subscriptions: [],
-    }
+    };
   }
 
   /**
@@ -46,28 +56,32 @@ export class DatabaseService implements IDatabaseClient {
    */
   async connect(): Promise<void> {
     if (this.status.isConnected) {
-      this.logger.info("Database is already connected")
-      return
+      this.logger.info("Database is already connected");
+      return;
     }
 
     if (!this.url) {
-      throw new DatabaseError(ErrorMessage.DATABASE_URL_MISSING)
+      throw new DatabaseError(ErrorMessage.DATABASE_URL_MISSING);
     }
 
     try {
-      this.status.connectionAttempts++
-      this.logger.info(`Connecting to database (attempt ${this.status.connectionAttempts})...`)
+      this.status.connectionAttempts++;
+      this.logger.info(
+        `Connecting to database (attempt ${this.status.connectionAttempts})...`,
+      );
 
       // Simulate connection with timeout
-      await this.simulateConnection()
+      await this.simulateConnection();
 
-      this.status.isConnected = true
-      this.status.lastConnected = new Date()
-      this.logger.info("Database connected successfully")
+      this.status.isConnected = true;
+      this.status.lastConnected = new Date();
+      this.logger.info("Database connected successfully");
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
-      this.logger.error("Database connection failed", err)
-      throw new DatabaseError(ErrorMessage.DATABASE_CONNECTION_ERROR, { cause: err })
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Database connection failed", err);
+      throw new DatabaseError(ErrorMessage.DATABASE_CONNECTION_ERROR, {
+        cause: err,
+      });
     }
   }
 
@@ -77,22 +91,24 @@ export class DatabaseService implements IDatabaseClient {
    */
   async disconnect(): Promise<void> {
     if (!this.status.isConnected) {
-      this.logger.info("Database is not connected")
-      return
+      this.logger.info("Database is not connected");
+      return;
     }
 
     try {
-      this.logger.info("Disconnecting from database...")
+      this.logger.info("Disconnecting from database...");
 
       // Simulate disconnection
-      await new Promise<void>((resolve) => setTimeout(resolve, 100))
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
 
-      this.status.isConnected = false
-      this.logger.info("Database disconnected successfully")
+      this.status.isConnected = false;
+      this.logger.info("Database disconnected successfully");
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
-      this.logger.error("Database disconnection failed", err)
-      throw new DatabaseError(ErrorMessage.DATABASE_DISCONNECTION_ERROR, { cause: err })
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Database disconnection failed", err);
+      throw new DatabaseError(ErrorMessage.DATABASE_DISCONNECTION_ERROR, {
+        cause: err,
+      });
     }
   }
 
@@ -101,7 +117,7 @@ export class DatabaseService implements IDatabaseClient {
    * @returns {boolean} True if connected, false otherwise
    */
   isConnected(): boolean {
-    return this.status.isConnected
+    return this.status.isConnected;
   }
 
   /**
@@ -109,7 +125,7 @@ export class DatabaseService implements IDatabaseClient {
    * @returns {DatabaseConnectionStatus} The connection status
    */
   getStatus(): DatabaseConnectionStatus {
-    return { ...this.status }
+    return { ...this.status };
   }
 
   /**
@@ -121,53 +137,61 @@ export class DatabaseService implements IDatabaseClient {
    */
   async executeQuery<T>(query: string, params: unknown[] = []): Promise<T[]> {
     if (!this.status.isConnected) {
-      throw new DatabaseError(ErrorMessage.DATABASE_NOT_CONNECTED)
+      throw new DatabaseError(ErrorMessage.DATABASE_NOT_CONNECTED);
     }
 
     try {
-      this.logger.info(`Executing query: ${query}`)
+      this.logger.info(`Executing query: ${query}`);
 
       // Log parameters for debugging
       if (params.length > 0) {
-        this.logger.info(`Query parameters: ${JSON.stringify(params)}`)
+        this.logger.info(`Query parameters: ${JSON.stringify(params)}`);
       }
 
       // Simulate query execution delay
-      await new Promise<void>((resolve) => setTimeout(resolve, 100))
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
 
       // Handle different types of queries
       if (query.trim().toUpperCase().startsWith("CREATE TABLE")) {
         // Handle CREATE TABLE queries
-        return [] as T[]
-      } else if (query.trim().toUpperCase().startsWith("INSERT INTO migrations")) {
+        return [] as T[];
+      } else if (
+        query.trim().toUpperCase().startsWith("INSERT INTO migrations")
+      ) {
         // Handle migration inserts
-        const name = params[0] as string
+        const name = params[0] as string;
         this.db.migrations.push({
           name,
           applied_at: new Date(),
-        })
-        return [] as T[]
-      } else if (query.trim().toUpperCase().startsWith("SELECT name FROM migrations")) {
+        });
+        return [] as T[];
+      } else if (
+        query.trim().toUpperCase().startsWith("SELECT name FROM migrations")
+      ) {
         // Handle migration selects
-        return this.db.migrations.map((m) => ({ name: m.name })) as unknown as T[]
-      } else if (query.trim().toUpperCase().startsWith("INSERT INTO subscriptions")) {
+        return this.db.migrations.map((m) => ({
+          name: m.name,
+        })) as unknown as T[];
+      } else if (
+        query.trim().toUpperCase().startsWith("INSERT INTO subscriptions")
+      ) {
         // Handle subscription inserts
-        const [email, city, frequency, status, token, tokenExpiry] = params
+        const [email, city, frequency, status, token, tokenExpiry] = params;
 
         // Check if subscription already exists
         const existingIndex = this.db.subscriptions.findIndex(
           (s) =>
             String(s.email).toLowerCase() === String(email).toLowerCase() &&
             String(s.city).toLowerCase() === String(city).toLowerCase(),
-        )
+        );
 
         if (existingIndex !== -1) {
           // Return empty array to simulate unique constraint violation
-          return [] as T[]
+          return [] as T[];
         }
 
-        const id = this.generateUuid()
-        const now = new Date()
+        const id = this.generateUuid();
+        const now = new Date();
 
         const subscription = {
           id,
@@ -179,93 +203,122 @@ export class DatabaseService implements IDatabaseClient {
           token_expiry: tokenExpiry,
           created_at: now,
           updated_at: now,
-        }
+        };
 
-        this.db.subscriptions.push(subscription)
+        this.db.subscriptions.push(subscription);
 
         // Log the created subscription
-        this.logger.info(`Created subscription: ${JSON.stringify(subscription)}`)
+        this.logger.info(
+          `Created subscription: ${JSON.stringify(subscription)}`,
+        );
 
-        return [subscription] as unknown as T[]
-      } else if (query.trim().toUpperCase().startsWith("SELECT") && query.includes("FROM subscriptions")) {
+        return [subscription] as unknown as T[];
+      } else if (
+        query.trim().toUpperCase().startsWith("SELECT") &&
+        query.includes("FROM subscriptions")
+      ) {
         // Handle subscription selects
         if (query.includes("WHERE email =") && query.includes("AND city =")) {
           // Find by email and city
-          const email = params[0]
-          const city = params[1]
+          const email = params[0];
+          const city = params[1];
 
           const subscription = this.db.subscriptions.find(
             (s) =>
               String(s.email).toLowerCase() === String(email).toLowerCase() &&
               String(s.city).toLowerCase() === String(city).toLowerCase(),
-          )
+          );
 
-          return subscription ? ([subscription] as unknown as T[]) : ([] as T[])
+          return subscription
+            ? ([subscription] as unknown as T[])
+            : ([] as T[]);
         } else if (query.includes("WHERE token =")) {
           // Find by token
-          const token = params[0]
+          const token = params[0];
 
-          const subscription = this.db.subscriptions.find((s) => s.token === token)
+          const subscription = this.db.subscriptions.find(
+            (s) => s.token === token,
+          );
 
-          return subscription ? ([subscription] as unknown as T[]) : ([] as T[])
+          return subscription
+            ? ([subscription] as unknown as T[])
+            : ([] as T[]);
         }
-      } else if (query.trim().toUpperCase().startsWith("UPDATE subscriptions")) {
+      } else if (
+        query.trim().toUpperCase().startsWith("UPDATE subscriptions")
+      ) {
         // Handle subscription updates
-        const id = params[params.length - 1]
+        const id = params[params.length - 1];
 
-        const subscriptionIndex = this.db.subscriptions.findIndex((s) => s.id === id)
+        const subscriptionIndex = this.db.subscriptions.findIndex(
+          (s) => s.id === id,
+        );
 
         if (subscriptionIndex === -1) {
-          return [] as T[]
+          return [] as T[];
         }
 
-        const subscription = { ...this.db.subscriptions[subscriptionIndex] }
+        const subscription = { ...this.db.subscriptions[subscriptionIndex] };
 
         // Update fields based on the query
         if (query.includes("status =")) {
           const statusIndex = params.indexOf(
-            params.find((p) => typeof p === "string" && ["pending", "confirmed", "unsubscribed"].includes(p as string)),
-          )
+            params.find(
+              (p) =>
+                typeof p === "string" &&
+                ["pending", "confirmed", "unsubscribed"].includes(p as string),
+            ),
+          );
 
           if (statusIndex !== -1) {
-            subscription.status = params[statusIndex]
+            subscription.status = params[statusIndex];
           }
         }
 
         if (query.includes("token =")) {
           const tokenIndex = params.indexOf(
-            params.find((p) => typeof p === "string" && p !== id && p !== subscription.status),
-          )
+            params.find(
+              (p) =>
+                typeof p === "string" && p !== id && p !== subscription.status,
+            ),
+          );
 
           if (tokenIndex !== -1) {
-            subscription.token = params[tokenIndex]
+            subscription.token = params[tokenIndex];
           }
         }
 
         if (query.includes("token_expiry =")) {
-          const tokenExpiryIndex = params.indexOf(params.find((p) => p instanceof Date))
+          const tokenExpiryIndex = params.indexOf(
+            params.find((p) => p instanceof Date),
+          );
 
           if (tokenExpiryIndex !== -1) {
-            subscription.token_expiry = params[tokenExpiryIndex]
+            subscription.token_expiry = params[tokenExpiryIndex];
           }
         }
 
-        subscription.updated_at = new Date()
+        subscription.updated_at = new Date();
 
-        this.db.subscriptions[subscriptionIndex] = subscription
+        this.db.subscriptions[subscriptionIndex] = subscription;
 
         // Log the updated subscription
-        this.logger.info(`Updated subscription: ${JSON.stringify(subscription)}`)
+        this.logger.info(
+          `Updated subscription: ${JSON.stringify(subscription)}`,
+        );
 
-        return [subscription] as unknown as T[]
+        return [subscription] as unknown as T[];
       }
 
       // Default: return empty array
-      return [] as T[]
+      return [] as T[];
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
-      this.logger.error("Query execution failed", err)
-      throw new DatabaseError(`${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`, { cause: err })
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Query execution failed", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
     }
   }
 
@@ -278,16 +331,16 @@ export class DatabaseService implements IDatabaseClient {
     return new Promise<void>((resolve, reject) => {
       // Simulate connection delay
       const connectionTimer = setTimeout(() => {
-        clearTimeout(timeoutTimer)
-        resolve()
-      }, 500)
+        clearTimeout(timeoutTimer);
+        resolve();
+      }, 500);
 
       // Set connection timeout
       const timeoutTimer = setTimeout(() => {
-        clearTimeout(connectionTimer)
-        reject(new Error(ErrorMessage.DATABASE_CONNECTION_TIMEOUT))
-      }, this.connectionTimeout)
-    })
+        clearTimeout(connectionTimer);
+        reject(new Error(ErrorMessage.DATABASE_CONNECTION_TIMEOUT));
+      }, this.connectionTimeout);
+    });
   }
 
   /**
@@ -296,9 +349,9 @@ export class DatabaseService implements IDatabaseClient {
    */
   private generateUuid(): string {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0
-      const v = c === "x" ? r : (r & 0x3) | 0x8
-      return v.toString(16)
-    })
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
   }
 }

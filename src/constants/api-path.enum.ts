@@ -25,6 +25,9 @@ export enum ApiPath {
   // Static paths
   STATIC = "/",
   INDEX = "/index.html",
+
+  // New path added to fix the error
+  HOME = "/",
 }
 
 /**
@@ -34,7 +37,7 @@ export enum ApiPath {
  * @returns Full API path
  */
 export function buildApiPath(version: string, path: string): string {
-  return `${ApiPath.BASE}/${version}${path}`
+  return `${ApiPath.BASE}/${version}${path}`;
 }
 
 /**
@@ -43,5 +46,5 @@ export function buildApiPath(version: string, path: string): string {
  * @returns Full API path with V1 version
  */
 export function buildV1ApiPath(path: string): string {
-  return buildApiPath("v1", path)
+  return buildApiPath("v1", path);
 }

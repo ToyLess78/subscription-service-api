@@ -1,13 +1,13 @@
-import type { FastifyPluginAsync } from "fastify"
-import weatherRoutes from "./weather.routes"
-import subscriptionRoutes from "./subscription.routes"
-import { ApiPath } from "../constants/api-path.enum"
+import type { FastifyPluginAsync } from "fastify";
+import weatherRoutes from "./weather.routes";
+import subscriptionRoutes from "./subscription.routes";
+import { ApiPath } from "../constants/api-path.enum";
 
 // Define the health check response type
 export interface HealthCheckResponse {
-  status: string
-  timestamp: string
-  [key: string]: unknown
+  status: string;
+  timestamp: string;
+  [key: string]: unknown;
 }
 
 const routes: FastifyPluginAsync = async (fastify) => {
@@ -40,9 +40,9 @@ const routes: FastifyPluginAsync = async (fastify) => {
       return {
         status: "ok",
         timestamp: new Date().toISOString(),
-      }
+      };
     },
-  })
+  });
 
   // API version route
   fastify.get(ApiPath.STATIC, {
@@ -67,15 +67,15 @@ const routes: FastifyPluginAsync = async (fastify) => {
         name: "weather-subscription-api",
         version: fastify.config.API_VERSION,
         environment: fastify.config.NODE_ENV,
-      }
+      };
     },
-  })
+  });
 
   // Register weather routes
-  await fastify.register(weatherRoutes)
+  await fastify.register(weatherRoutes);
 
   // Register subscription routes
-  await fastify.register(subscriptionRoutes)
-}
+  await fastify.register(subscriptionRoutes);
+};
 
-export default routes
+export default routes;

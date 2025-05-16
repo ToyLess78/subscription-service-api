@@ -12,7 +12,7 @@ export const temperatureSchema = {
       description: "Temperature in Fahrenheit",
     },
   },
-}
+};
 
 export const weatherSchema = {
   $id: "weather",
@@ -44,7 +44,7 @@ export const weatherSchema = {
       description: "URL to the weather condition icon",
     },
   },
-}
+};
 
 export const errorResponseSchema = {
   $id: "errorResponse",
@@ -55,15 +55,16 @@ export const errorResponseSchema = {
       description: "Error message",
     },
   },
-}
+};
 
 export const weatherRequestSchema = {
   type: "object",
   properties: {
     city: {
       type: "string",
-      description: "Name of the city to get weather for (e.g., London, New York, Tokyo)",
+      description:
+        "Name of the city to get weather for (e.g., London, New York, Tokyo)",
     },
   },
   required: ["city"],
-}
+};

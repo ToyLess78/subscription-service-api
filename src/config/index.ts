@@ -1,6 +1,6 @@
-import type { FastifyPluginAsync } from "fastify"
-import fastifyEnv from "@fastify/env"
-import fastifyPlugin from "fastify-plugin"
+import type { FastifyPluginAsync } from "fastify";
+import fastifyEnv from "@fastify/env";
+import fastifyPlugin from "fastify-plugin";
 
 // Define the schema for environment variables
 const schema = {
@@ -58,7 +58,7 @@ const schema = {
       default: "86400", // 24 hours in seconds
     },
   },
-}
+};
 
 // Define the options for the plugin
 const options = {
@@ -66,37 +66,37 @@ const options = {
   schema: schema,
   dotenv: true,
   data: process.env,
-}
+};
 
 // Create a plugin to load and validate environment variables
 const configPlugin: FastifyPluginAsync = async (fastify) => {
-  await fastify.register(fastifyEnv, options)
+  await fastify.register(fastifyEnv, options);
 
   // Update logger level based on config
   if (fastify.config.LOG_LEVEL) {
-    fastify.log.level = fastify.config.LOG_LEVEL
+    fastify.log.level = fastify.config.LOG_LEVEL;
   }
-}
+};
 
-export default fastifyPlugin(configPlugin)
+export default fastifyPlugin(configPlugin);
 
 // Type declaration for the fastify instance with config
 declare module "fastify" {
   interface FastifyInstance {
     config: {
-      PORT: string
-      HOST: string
-      NODE_ENV: string
-      API_VERSION: string
-      WEATHER_API_KEY: string
-      LOG_LEVEL: string
-      PRETTY_LOGS: string
-      DATABASE_URL: string
-      DATABASE_CONNECTION_TIMEOUT: string
-      RESEND_API_KEY: string
-      EMAIL_FROM: string
-      BASE_URL: string
-      TOKEN_EXPIRY: string
-    }
+      PORT: string;
+      HOST: string;
+      NODE_ENV: string;
+      API_VERSION: string;
+      WEATHER_API_KEY: string;
+      LOG_LEVEL: string;
+      PRETTY_LOGS: string;
+      DATABASE_URL: string;
+      DATABASE_CONNECTION_TIMEOUT: string;
+      RESEND_API_KEY: string;
+      EMAIL_FROM: string;
+      BASE_URL: string;
+      TOKEN_EXPIRY: string;
+    };
   }
 }

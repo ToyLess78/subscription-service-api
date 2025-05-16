@@ -1,14 +1,14 @@
-import type { FastifyPluginAsync } from "fastify"
-import fastifyPlugin from "fastify-plugin"
-import { AppError, InternalServerError } from "../utils/errors"
-import { formatError } from "../utils/logger.utils"
-import { ErrorMessage } from "../constants/error-message.enum"
-import { HttpStatus } from "../constants/http-status.enum"
+import type { FastifyPluginAsync } from "fastify";
+import fastifyPlugin from "fastify-plugin";
+import { AppError, InternalServerError } from "../utils/errors";
+import { formatError } from "../utils/logger.utils";
+import { ErrorMessage } from "../constants/error-message.enum";
+import { HttpStatus } from "../constants/http-status.enum";
 
 const errorMiddleware: FastifyPluginAsync = async (fastify) => {
   // Add a custom error handler
   fastify.setErrorHandler(async (error, request, reply) => {
-    const isDev = fastify.config.NODE_ENV === "development"
+    const isDev = fastify.config.NODE_ENV === "development";
 
     // Handle AppError instances
     if (error instanceof AppError) {
@@ -17,11 +17,11 @@ const errorMiddleware: FastifyPluginAsync = async (fastify) => {
         statusCode: error.statusCode,
         operationalError: error.isOperational,
         ...(isDev && { stack: error.stack }),
-      })
+      });
 
       return reply.status(error.statusCode).send({
         error: error.message,
-      })
+      });
     }
 
     // Handle validation errors from Fastify
@@ -29,29 +29,32 @@ const errorMiddleware: FastifyPluginAsync = async (fastify) => {
       const validationError = {
         msg: ErrorMessage.VALIDATION_ERROR,
         details: error.validation,
-      }
+      };
 
-      fastify.log.error(validationError)
+      fastify.log.error(validationError);
 
       return reply.status(HttpStatus.BAD_REQUEST).send({
         error: ErrorMessage.VALIDATION_ERROR,
         details: error.validation,
-      })
+      });
     }
 
     // Handle other errors
-    const serverError = new InternalServerError()
+    const serverError = new InternalServerError();
 
     fastify.log.error({
       msg: "Unhandled server error",
-      originalError: formatError(error instanceof Error ? error : new Error(String(error)), isDev),
+      originalError: formatError(
+        error instanceof Error ? error : new Error(String(error)),
+        isDev,
+      ),
       handledAs: formatError(serverError),
-    })
+    });
 
     return reply.status(serverError.statusCode).send({
       error: serverError.message,
-    })
-  })
-}
+    });
+  });
+};
 
-export default fastifyPlugin(errorMiddleware)
+export default fastifyPlugin(errorMiddleware);

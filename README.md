@@ -1,6 +1,6 @@
 # Weather Subscription API
 
-A RESTful API for weather forecasts and subscription management.
+A RESTful API for weather forecasts and subscription management, built with modern architectural principles.
 
 ## Features
 
@@ -9,6 +9,18 @@ A RESTful API for weather forecasts and subscription management.
 - Confirmation and unsubscription flows
 - PostgreSQL database integration with Prisma ORM
 - Swagger API documentation
+- Fully typed TypeScript codebase
+- SOLID architecture principles
+- Comprehensive error handling
+
+## Architecture
+
+This project follows clean architecture principles, with clear separation of concerns:
+
+- **Core**: Contains domain entities, interfaces, and business logic
+- **Infrastructure**: Implements technical concerns (database, logging, external services)
+- **API**: Handles HTTP requests/responses and routing
+- **Config**: Manages environment variables and application configuration
 
 ## Setup
 
@@ -118,3 +130,39 @@ npx prisma migrate dev --name fix_schema
 - `POST /api/v1/subscribe` - Subscribe to weather updates
 - `GET /api/v1/confirm/:token` - Confirm subscription
 - `GET /api/v1/unsubscribe/:token` - Unsubscribe from updates
+
+## Development
+
+### Code Quality
+
+This project uses ESLint and Prettier to enforce code quality and consistent formatting.
+
+Before committing code, run:
+
+```bash
+pnpm precommit
+```
+
+This will format your code with Prettier and check for linting errors with ESLint.
+
+### Available Scripts
+
+- `pnpm dev` - Start the development server
+- `pnpm build` - Build the application
+- `pnpm start` - Start the production server
+- `pnpm lint` - Run ESLint
+- `pnpm format` - Format code with Prettier
+- `pnpm precommit` - Run both format and lint
+- `pnpm test` - Run tests
+- `pnpm prisma:generate` - Generate Prisma client
+- `pnpm prisma:migrate` - Run database migrations
+- `pnpm prisma:studio` - Open Prisma Studio
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Run `pnpm precommit` to format and lint your code
+4. Commit your changes (`git commit -m 'Add some amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request

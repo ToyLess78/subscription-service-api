@@ -19,34 +19,34 @@ export enum SubscriptionStatus {
  * Subscription model interface
  */
 export interface Subscription {
-  id: string
-  email: string
-  city: string
-  frequency: SubscriptionFrequency
-  status: SubscriptionStatus
-  token: string
-  tokenExpiry: Date
-  createdAt: Date
-  updatedAt: Date
+  id: string;
+  email: string;
+  city: string;
+  frequency: SubscriptionFrequency;
+  status: SubscriptionStatus;
+  token: string;
+  tokenExpiry: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
  * Create subscription DTO
  */
 export interface CreateSubscriptionDto {
-  email: string
-  city: string
-  frequency: SubscriptionFrequency
+  email: string;
+  city: string;
+  frequency: SubscriptionFrequency;
 }
 
 /**
  * Subscription response DTO
  */
 export interface SubscriptionResponseDto {
-  id: string
-  email: string
-  city: string
-  frequency: SubscriptionFrequency
-  status: SubscriptionStatus
-  createdAt: Date
+  id: string;
+  email: string;
+  city: string;
+  frequency: SubscriptionFrequency;
+  status: SubscriptionStatus;
+  createdAt: Date;
 }

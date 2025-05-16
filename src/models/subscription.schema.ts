@@ -1,4 +1,7 @@
-import { SubscriptionFrequency, SubscriptionStatus } from "./subscription.model"
+import {
+  SubscriptionFrequency,
+  SubscriptionStatus,
+} from "./subscription.model";
 
 /**
  * Subscription schema for validation and documentation
@@ -51,7 +54,7 @@ export const subscriptionSchema = {
     },
   },
   required: ["email", "city", "frequency"],
-}
+};
 
 /**
  * Create subscription request schema
@@ -75,7 +78,7 @@ export const createSubscriptionSchema = {
     },
   },
   required: ["email", "city", "frequency"],
-}
+};
 
 /**
  * Subscription response schema
@@ -112,7 +115,7 @@ export const subscriptionResponseSchema = {
       description: "Date when the subscription was created",
     },
   },
-}
+};
 
 /**
  * Error response schema
@@ -125,7 +128,7 @@ export const errorResponseSchema = {
       description: "Error message",
     },
   },
-}
+};
 
 /**
  * Success response schema
@@ -138,4 +141,4 @@ export const successResponseSchema = {
       description: "Success message",
     },
   },
-}
+};

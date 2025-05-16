@@ -1,28 +1,44 @@
-import type { PrismaClient } from "@prisma/client/extension";
-
-import type { IDatabaseClient } from "../db/database.interface"
-import type { Subscription, SubscriptionFrequency, SubscriptionStatus } from "../models/subscription.model"
-import { DatabaseError, SubscriptionExistsError, SubscriptionNotFoundError } from "../utils/errors"
-import { ErrorMessage } from "../constants/error-message.enum"
-import { PrismaService } from "../db/prisma.service"
+import type { PrismaClient } from "@prisma/client";
+import type { IDatabaseClient } from "../db/database.interface";
+import type {
+  Subscription,
+  SubscriptionFrequency,
+  SubscriptionStatus,
+} from "../models/subscription.model";
+import {
+  DatabaseError,
+  SubscriptionExistsError,
+  SubscriptionNotFoundError,
+} from "../utils/errors";
+import { ErrorMessage } from "../constants/error-message.enum";
+import { PrismaService } from "../db/prisma.service";
 
 /**
  * Repository for subscription data access using Prisma
  */
 export class SubscriptionRepository {
-  private db: IDatabaseClient
-  private prisma: PrismaClient
-  private logger: { info: (msg: string) => void; error: (msg: string, err?: Error) => void }
+  private db: IDatabaseClient;
+  private prisma: PrismaClient;
+  private logger: {
+    info: (msg: string) => void;
+    error: (msg: string, err?: Error) => void;
+  };
 
-  constructor(db: IDatabaseClient, logger: { info: (msg: string) => void; error: (msg: string, err?: Error) => void }) {
-    this.db = db
-    this.logger = logger
+  constructor(
+    db: IDatabaseClient,
+    logger: {
+      info: (msg: string) => void;
+      error: (msg: string, err?: Error) => void;
+    },
+  ) {
+    this.db = db;
+    this.logger = logger;
 
     // Get Prisma client from the database service
     if (db instanceof PrismaService) {
-      this.prisma = db.getPrismaClient()
+      this.prisma = db.getPrismaClient();
     } else {
-      throw new Error("Database service must be an instance of PrismaService")
+      throw new Error("Database service must be an instance of PrismaService");
     }
   }
 
@@ -33,10 +49,14 @@ export class SubscriptionRepository {
    * @throws {SubscriptionExistsError} If subscription already exists
    * @throws {DatabaseError} If database operation fails
    */
-  async create(subscription: Omit<Subscription, "id" | "createdAt" | "updatedAt">): Promise<Subscription> {
+  async create(
+    subscription: Omit<Subscription, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Subscription> {
     try {
       // Log the subscription data for debugging
-      this.logger.info(`Creating subscription for email=${subscription.email}, city=${subscription.city}`)
+      this.logger.info(
+        `Creating subscription for email=${subscription.email}, city=${subscription.city}`,
+      );
 
       // Create the subscription using Prisma
       const result = await this.prisma.subscription.create({
@@ -48,27 +68,33 @@ export class SubscriptionRepository {
           token: subscription.token,
           tokenExpiry: subscription.tokenExpiry,
         },
-      })
+      });
 
       // Map the result to a Subscription object
-      return this.mapPrismaToSubscription(result)
+      return this.mapPrismaToSubscription(result);
     } catch (error) {
       // Handle unique constraint violation
-      if (error instanceof Error && error.message.includes("Unique constraint failed")) {
-        throw new SubscriptionExistsError()
+      if (
+        error instanceof Error &&
+        error.message.includes("Unique constraint failed")
+      ) {
+        throw new SubscriptionExistsError();
       }
 
       // Log and wrap other errors
-      const err = error instanceof Error ? error : new Error(String(error))
-      this.logger.error("Failed to create subscription", err)
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to create subscription", err);
 
       // If it's already a DatabaseError, just re-throw it
       if (error instanceof DatabaseError) {
-        throw error
+        throw error;
       }
 
       // Otherwise, wrap it in a DatabaseError
-      throw new DatabaseError(`${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`, { cause: err })
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
     }
   }
 
@@ -79,7 +105,10 @@ export class SubscriptionRepository {
    * @returns Subscription or null if not found
    * @throws {DatabaseError} If database operation fails
    */
-  async findByEmailAndCity(email: string, city: string): Promise<Subscription | null> {
+  async findByEmailAndCity(
+    email: string,
+    city: string,
+  ): Promise<Subscription | null> {
     try {
       const result = await this.prisma.subscription.findUnique({
         where: {
@@ -88,17 +117,20 @@ export class SubscriptionRepository {
             city,
           },
         },
-      })
+      });
 
       if (!result) {
-        return null
+        return null;
       }
 
-      return this.mapPrismaToSubscription(result)
+      return this.mapPrismaToSubscription(result);
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
-      this.logger.error("Failed to find subscription by email and city", err)
-      throw new DatabaseError(`${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`, { cause: err })
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to find subscription by email and city", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
     }
   }
 
@@ -114,17 +146,20 @@ export class SubscriptionRepository {
         where: {
           token,
         },
-      })
+      });
 
       if (!result) {
-        return null
+        return null;
       }
 
-      return this.mapPrismaToSubscription(result)
+      return this.mapPrismaToSubscription(result);
     } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error))
-      this.logger.error("Failed to find subscription by token", err)
-      throw new DatabaseError(`${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`, { cause: err })
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to find subscription by token", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
     }
   }
 
@@ -137,8 +172,8 @@ export class SubscriptionRepository {
    * @throws {DatabaseError} If database operation fails
    */
   async update(
-      id: string,
-      data: Partial<Pick<Subscription, "status" | "token" | "tokenExpiry">>,
+    id: string,
+    data: Partial<Pick<Subscription, "status" | "token" | "tokenExpiry">>,
   ): Promise<Subscription> {
     try {
       const result = await this.prisma.subscription.update({
@@ -150,18 +185,24 @@ export class SubscriptionRepository {
           token: data.token,
           tokenExpiry: data.tokenExpiry,
         },
-      })
+      });
 
-      return this.mapPrismaToSubscription(result)
+      return this.mapPrismaToSubscription(result);
     } catch (error) {
       // Handle record not found
-      if (error instanceof Error && error.message.includes("Record to update not found")) {
-        throw new SubscriptionNotFoundError()
+      if (
+        error instanceof Error &&
+        error.message.includes("Record to update not found")
+      ) {
+        throw new SubscriptionNotFoundError();
       }
 
-      const err = error instanceof Error ? error : new Error(String(error))
-      this.logger.error("Failed to update subscription", err)
-      throw new DatabaseError(`${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`, { cause: err })
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to update subscription", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
     }
   }
 
@@ -181,6 +222,6 @@ export class SubscriptionRepository {
       tokenExpiry: prismaSubscription.tokenExpiry,
       createdAt: prismaSubscription.createdAt,
       updatedAt: prismaSubscription.updatedAt,
-    }
+    };
   }
 }
