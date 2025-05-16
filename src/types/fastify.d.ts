@@ -1,11 +1,17 @@
-import type { FastifyRequest, FastifyReply } from "fastify-plugin";
+import type {
+  FastifyRequest as OriginalFastifyRequest,
+  FastifyReply as OriginalFastifyReply,
+} from "fastify-plugin";
 
 declare module "fastify" {
   interface FastifyInstance {
     register: (plugin: unknown, options?: unknown) => FastifyInstance;
     get: (
       path: string,
-      handler: (request: FastifyRequest, reply: FastifyReply) => void,
+      handler: (
+        request: OriginalFastifyRequest,
+        reply: OriginalFastifyReply,
+      ) => void,
     ) => FastifyInstance;
   }
 

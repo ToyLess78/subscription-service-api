@@ -28,6 +28,8 @@ export interface Subscription {
   tokenExpiry: Date;
   createdAt: Date;
   updatedAt: Date;
+  lastSentAt?: Date | null;
+  nextScheduledAt?: Date | null;
 }
 
 /**

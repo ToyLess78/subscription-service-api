@@ -14,6 +14,12 @@ export interface IWeatherService {
   getCurrentWeather(city: string): Promise<WeatherData>;
 }
 
+interface ErrorResponseData {
+  error?: {
+    message?: string;
+  };
+}
+
 export class WeatherService implements IWeatherService {
   private apiKey: string;
   private baseUrl: string;
@@ -60,8 +66,9 @@ export class WeatherService implements IWeatherService {
           throw new UnauthorizedError(ErrorMessage.WEATHER_API_UNAUTHORIZED);
         } else {
           // Fix: Use ErrorMessage enum for the base message
-          const errorDetails = error.response.data?.error?.message
-            ? `: ${error.response.data.error.message}`
+          const responseData = error.response.data as ErrorResponseData;
+          const errorDetails = responseData?.error?.message
+            ? `: ${responseData.error.message}`
             : "";
           const errorMessage = `${ErrorMessage.WEATHER_API_ERROR}${errorDetails}`;
           throw new WeatherApiError(errorMessage, error.response.status);

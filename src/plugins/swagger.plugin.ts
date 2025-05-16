@@ -1,10 +1,15 @@
-import type { FastifyPluginAsync } from "fastify";
-import fastifySwagger from "@fastify/swagger";
-import fastifySwaggerUi from "@fastify/swagger-ui";
+import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { ApiPath } from "../constants/api-path.enum";
+import { subscriptionSchema } from "../models/subscription.schema";
+import { weatherSchema } from "../models/weather.schema";
 
-const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
+const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
+  // Import fastifySwagger dynamically to avoid TypeScript errors
+  // Use require instead of dynamic imports to avoid type issues
+  const fastifySwagger = require("@fastify/swagger");
+  const fastifySwaggerUi = require("@fastify/swagger-ui");
+
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
@@ -28,11 +33,14 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
           : [],
       tags: [
         { name: "weather", description: "Weather related endpoints" },
+        { name: "subscription", description: "Subscription related endpoints" },
         { name: "system", description: "System related endpoints" },
       ],
       components: {
         schemas: {
-          // These will be populated automatically from the schema registry
+          // Register only the required schemas for Swagger documentation
+          Subscription: subscriptionSchema,
+          Weather: weatherSchema,
         },
       },
     },
@@ -43,17 +51,40 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
     uiConfig: {
       docExpansion: "list",
       deepLinking: false,
+      displayRequestDuration: true,
+      filter: true,
     },
     uiHooks: {
-      onRequest: (_request, _reply, next) => {
+      onRequest: (
+        _request: FastifyRequest,
+        _reply: FastifyReply,
+        next: (err?: Error) => void,
+      ): void => {
         next();
       },
-      preHandler: (_request, _reply, next) => {
+      preHandler: (
+        _request: FastifyRequest,
+        _reply: FastifyReply,
+        next: (err?: Error) => void,
+      ): void => {
         next();
       },
     },
     staticCSP: true,
-    transformStaticCSP: (header) => header,
+    transformStaticCSP: (header: string): string => header,
+  });
+
+  // Add a redirect from /api to the documentation but hide it from Swagger docs
+  fastify.get("/api", {
+    schema: {
+      hide: true,
+    },
+    handler: (_request, reply): Promise<void> => {
+      return reply.redirect(
+        302,
+        ApiPath.DOCUMENTATION,
+      ) as unknown as Promise<void>;
+    },
   });
 };
 

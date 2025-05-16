@@ -15,6 +15,7 @@ import startupPlugin from "./plugins/startup.plugin";
 import errorMiddleware from "./middlewares/error.middleware";
 import routes from "./routes";
 import { buildApiPath } from "./constants/api-path.enum";
+import cronPlugin from "./plugins/cron.plugin";
 
 // Create Fastify instance with logger configuration
 const fastify = Fastify({
@@ -33,7 +34,7 @@ const fastify = Fastify({
 });
 
 // Register plugins
-const start = async () => {
+const start = async (): Promise<void> => {
   try {
     // Register configuration plugin
     await fastify.register(config);
@@ -49,6 +50,9 @@ const start = async () => {
 
     // Register database plugin
     await fastify.register(dbPlugin);
+
+    // Register cron plugin (must be after database plugin)
+    await fastify.register(cronPlugin);
 
     // Register schemas plugin (must be before swagger and routes)
     await fastify.register(schemasPlugin);
@@ -86,7 +90,7 @@ process.on("unhandledRejection", (err) => {
 
 // Handle uncaught exceptions
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught exception:", err);
+  fastify.log.error("Uncaught exception:", err);
   process.exit(1);
 });
 

@@ -7,56 +7,91 @@ import { ErrorMessage } from "../constants/error-message.enum";
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
+import type { PrismaClient } from "@prisma/client";
 
-/**
- * Interface for Prisma Client methods we use
- */
-interface PrismaClientMethods {
-  $connect: () => Promise<void>;
-  $disconnect: () => Promise<void>;
-  $on: (eventType: string, callback: (event: any) => void) => void;
-  $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Promise<T>;
-}
-
-/**
- * Event interface for Prisma query events
- */
-interface PrismaQueryEvent {
+// Define event types for Prisma
+export interface PrismaQueryEvent {
   query: string;
   params: string;
   duration: number;
   target: string;
 }
 
-/**
- * Event interface for Prisma error events
- */
-interface PrismaErrorEvent {
+export interface PrismaErrorEvent {
   message: string;
   target?: string;
 }
 
-/**
- * Event interface for Prisma info events
- */
-interface PrismaInfoEvent {
+export interface PrismaInfoEvent {
   message: string;
   target?: string;
 }
 
-/**
- * Event interface for Prisma warn events
- */
-interface PrismaWarnEvent {
+export interface PrismaWarnEvent {
   message: string;
   target?: string;
 }
+
+// Define a more specific type for PrismaClient that includes our custom types
+export type PrismaClientType = PrismaClient & {
+  subscription: {
+    create: (args: {
+      data: SubscriptionCreateInput;
+    }) => Promise<SubscriptionModel>;
+    findUnique: (args: {
+      where: Record<string, unknown>;
+    }) => Promise<SubscriptionModel | null>;
+    findMany: (args: {
+      where?: Record<string, unknown>;
+    }) => Promise<SubscriptionModel[]>;
+    update: (args: {
+      where: Record<string, unknown>;
+      data: SubscriptionUpdateInput;
+    }) => Promise<SubscriptionModel>;
+  };
+  $on<T extends "query" | "error" | "info" | "warn">(
+    eventType: T,
+    callback: T extends "query"
+      ? (event: PrismaQueryEvent) => void
+      : T extends "error"
+        ? (event: PrismaErrorEvent) => void
+        : T extends "info"
+          ? (event: PrismaInfoEvent) => void
+          : (event: PrismaWarnEvent) => void,
+  ): void;
+};
+
+// Define custom types for Subscription model
+export interface SubscriptionModel {
+  id: string;
+  email: string;
+  city: string;
+  frequency: string;
+  status: string;
+  token: string;
+  tokenExpiry: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  lastSentAt: Date | null;
+  nextScheduledAt: Date | null;
+}
+
+// Define input types for Subscription operations
+export type SubscriptionCreateInput = Omit<
+  SubscriptionModel,
+  "id" | "createdAt" | "updatedAt"
+> & {
+  lastSentAt?: Date | null;
+  nextScheduledAt?: Date | null;
+};
+
+export type SubscriptionUpdateInput = Partial<SubscriptionModel>;
 
 /**
  * Prisma database service
  */
 export class PrismaService implements IDatabaseClient {
-  private prisma: PrismaClientMethods;
+  private prisma: PrismaClientType;
   private status: DatabaseConnectionStatus;
   private logger: {
     info: (msg: string) => void;
@@ -74,7 +109,10 @@ export class PrismaService implements IDatabaseClient {
 
     // Initialize Prisma client
     try {
-      const { PrismaClient } = require("@prisma/client");
+      // Import PrismaClient dynamically
+      const { PrismaClient } = require("@prisma/client") as {
+        PrismaClient: new (options: unknown) => PrismaClientType;
+      };
       this.prisma = new PrismaClient({
         log: [
           { level: "query", emit: "event" },
@@ -82,7 +120,7 @@ export class PrismaService implements IDatabaseClient {
           { level: "info", emit: "event" },
           { level: "warn", emit: "event" },
         ],
-      }) as PrismaClientMethods;
+      });
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Failed to initialize Prisma client", err);
@@ -136,6 +174,8 @@ export class PrismaService implements IDatabaseClient {
             token_expiry DateTime
             created_at   DateTime @default(now())
             updated_at   DateTime @updatedAt
+            last_sent_at DateTime?
+            next_scheduled_at DateTime?
             
             @@unique([email, city])
           }
@@ -145,6 +185,7 @@ export class PrismaService implements IDatabaseClient {
 
       // Try to require the Prisma client
       try {
+        // Import PrismaClient dynamically
         require("@prisma/client");
       } catch (error) {
         // If the error is about missing the Prisma client, generate it
@@ -290,7 +331,7 @@ export class PrismaService implements IDatabaseClient {
    * Get the Prisma client instance
    * @returns The Prisma client instance
    */
-  getPrismaClient(): any {
+  getPrismaClient(): PrismaClientType {
     return this.prisma;
   }
 

@@ -20,6 +20,8 @@ model Subscription {
   tokenExpiry DateTime @map("token_expiry")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  lastSentAt  DateTime? @map("last_sent_at")
+  nextScheduledAt DateTime? @map("next_scheduled_at")
 
   @@unique([email, city])
   @@map("subscriptions")

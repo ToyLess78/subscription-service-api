@@ -13,31 +13,44 @@ async function staticPlugin(fastify: FastifyInstance): Promise<void> {
   });
 
   // Serve index.html for the root route
-  fastify.get("/", (_request: FastifyRequest, reply: FastifyReply) => {
-    return reply.sendFile("index.html");
-  });
+  fastify.get(
+    "/",
+    (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+      return reply.sendFile("index.html") as unknown as Promise<void>;
+    },
+  );
 
   // Setup redirection from /confirm/:token to confirmation.html with token as query param
-  fastify.get(
-    `/confirm/:token`,
-    (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get(`/confirm/:token`, {
+    schema: {
+      hide: true,
+    },
+    handler: (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
       // Type assertion for params
       const params = request.params as { token: string };
       const token = params.token;
-      return reply.redirect(302, `/confirmation.html?token=${token}`);
+      return reply.redirect(
+        302,
+        `/confirmation.html?token=${token}`,
+      ) as unknown as Promise<void>;
     },
-  );
+  });
 
   // Setup redirection from /unsubscribe/:token to unsubscribed.html with token as query param
-  fastify.get(
-    `/unsubscribe/:token`,
-    (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get(`/unsubscribe/:token`, {
+    schema: {
+      hide: true,
+    },
+    handler: (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
       // Type assertion for params
       const params = request.params as { token: string };
       const token = params.token;
-      return reply.redirect(302, `/unsubscribed.html?token=${token}`);
+      return reply.redirect(
+        302,
+        `/unsubscribed.html?token=${token}`,
+      ) as unknown as Promise<void>;
     },
-  );
+  });
 }
 
 export default fastifyPlugin(staticPlugin);
