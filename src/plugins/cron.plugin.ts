@@ -3,7 +3,7 @@ import fastifyPlugin from "fastify-plugin";
 import { CronService } from "../services/cron.service";
 import { WeatherService } from "../services/weather.service";
 import { EmailService } from "../services/email.service";
-import type { PrismaService } from "../db/prisma.service";
+import type { PrismaService, PrismaClientType } from "../db/prisma.service";
 
 const cronPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
   // Create logger adapter
@@ -29,9 +29,9 @@ const cronPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
     logger,
   );
 
-  // Create cron service with proper type assertion
+  // Create cron service with proper typing
   const cronService = new CronService(
-    prisma as any, // Use type assertion to bypass type checking
+    prisma as PrismaClientType,
     weatherService,
     emailService,
     logger,

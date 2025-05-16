@@ -6,6 +6,7 @@ import { weatherSchema } from "../models/weather.schema";
 
 const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
   // Import fastifySwagger dynamically to avoid TypeScript errors
+  // Use require instead of dynamic imports to avoid type issues
   const fastifySwagger = require("@fastify/swagger");
   const fastifySwaggerUi = require("@fastify/swagger-ui");
 

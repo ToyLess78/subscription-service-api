@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import type { SubscriptionModel } from "../db/prisma.service";
+import type { PrismaClientType } from "../db/prisma.service";
 import {
   SubscriptionFrequency,
   SubscriptionStatus,
@@ -8,13 +8,28 @@ import type { WeatherService } from "./weather.service";
 import type { EmailService } from "./email.service";
 import { addHours, addDays, isAfter } from "date-fns";
 
+// Define types for Prisma queries
+interface SubscriptionQueryResult {
+  id: string;
+  email: string;
+  city: string;
+  frequency: string;
+  status: string;
+  token: string;
+  tokenExpiry: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  lastSentAt: Date | null;
+  nextScheduledAt: Date | null;
+}
+
 /**
  * Service for managing cron jobs for scheduled email delivery
  */
 export class CronService {
   // Change from private to protected to allow access in plugin
   protected jobs: Map<string, CronJob> = new Map();
-  private prisma: any; // Use any type to avoid TypeScript errors
+  private prisma: PrismaClientType;
   private weatherService: WeatherService;
   private emailService: EmailService;
   private logger: {
@@ -23,7 +38,7 @@ export class CronService {
   };
 
   constructor(
-    prisma: any,
+    prisma: PrismaClientType,
     weatherService: WeatherService,
     emailService: EmailService,
     logger: {
@@ -45,11 +60,11 @@ export class CronService {
       this.logger.info("Initializing cron jobs for active subscriptions...");
 
       // Get all confirmed subscriptions
-      const subscriptions = await this.prisma.subscription.findMany({
+      const subscriptions = (await this.prisma.subscription.findMany({
         where: {
           status: SubscriptionStatus.CONFIRMED,
         },
-      });
+      })) as SubscriptionQueryResult[];
 
       // Initialize jobs for each subscription
       for (const subscription of subscriptions) {
@@ -72,7 +87,7 @@ export class CronService {
       // Get subscription details
       const subscription = (await this.prisma.subscription.findUnique({
         where: { id: subscriptionId },
-      })) as SubscriptionModel | null;
+      })) as SubscriptionQueryResult | null;
 
       if (
         !subscription ||
@@ -158,7 +173,7 @@ export class CronService {
       // Get subscription details
       const subscription = (await this.prisma.subscription.findUnique({
         where: { id: subscriptionId },
-      })) as SubscriptionModel | null;
+      })) as SubscriptionQueryResult | null;
 
       if (
         !subscription ||

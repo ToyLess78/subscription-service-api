@@ -308,15 +308,14 @@ export class SubscriptionRepository {
     try {
       const now = new Date();
 
-      // Use type assertion to avoid TypeScript errors with the OR condition
+      // Use a type-safe approach with a cast to the specific query structure
+      const whereCondition = {
+        status: "CONFIRMED",
+        OR: [{ nextScheduledAt: null }, { nextScheduledAt: { lte: now } }],
+      };
+
       const results = await this.prisma.subscription.findMany({
-        where: {
-          status: "CONFIRMED",
-          OR: [
-            { nextScheduledAt: null } as any,
-            { nextScheduledAt: { lte: now } } as any,
-          ],
-        } as any,
+        where: whereCondition as unknown as Record<string, unknown>,
       });
 
       return results.map((result) =>

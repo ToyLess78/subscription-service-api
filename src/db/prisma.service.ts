@@ -9,6 +9,29 @@ import fs from "fs";
 import path from "path";
 import type { PrismaClient } from "@prisma/client";
 
+// Define event types for Prisma
+export interface PrismaQueryEvent {
+  query: string;
+  params: string;
+  duration: number;
+  target: string;
+}
+
+export interface PrismaErrorEvent {
+  message: string;
+  target?: string;
+}
+
+export interface PrismaInfoEvent {
+  message: string;
+  target?: string;
+}
+
+export interface PrismaWarnEvent {
+  message: string;
+  target?: string;
+}
+
 // Define a more specific type for PrismaClient that includes our custom types
 export type PrismaClientType = PrismaClient & {
   subscription: {
@@ -26,10 +49,16 @@ export type PrismaClientType = PrismaClient & {
       data: SubscriptionUpdateInput;
     }) => Promise<SubscriptionModel>;
   };
-  $on: <T extends "query" | "error" | "info" | "warn">(
+  $on<T extends "query" | "error" | "info" | "warn">(
     eventType: T,
-    callback: (event: any) => void,
-  ) => void;
+    callback: T extends "query"
+      ? (event: PrismaQueryEvent) => void
+      : T extends "error"
+        ? (event: PrismaErrorEvent) => void
+        : T extends "info"
+          ? (event: PrismaInfoEvent) => void
+          : (event: PrismaWarnEvent) => void,
+  ): void;
 };
 
 // Define custom types for Subscription model
@@ -57,40 +86,6 @@ export type SubscriptionCreateInput = Omit<
 };
 
 export type SubscriptionUpdateInput = Partial<SubscriptionModel>;
-
-/**
- * Event interface for Prisma query events
- */
-interface PrismaQueryEvent {
-  query: string;
-  params: string;
-  duration: number;
-  target: string;
-}
-
-/**
- * Event interface for Prisma error events
- */
-interface PrismaErrorEvent {
-  message: string;
-  target?: string;
-}
-
-/**
- * Event interface for Prisma info events
- */
-interface PrismaInfoEvent {
-  message: string;
-  target?: string;
-}
-
-/**
- * Event interface for Prisma warn events
- */
-interface PrismaWarnEvent {
-  message: string;
-  target?: string;
-}
 
 /**
  * Prisma database service
@@ -377,27 +372,23 @@ export class PrismaService implements IDatabaseClient {
    */
   private setupLogging(): void {
     // Log queries
-    this.prisma.$on("query", (event: any) => {
-      const queryEvent = event as PrismaQueryEvent;
-      this.logger.info(`Prisma Query: ${queryEvent.query}`);
+    this.prisma.$on("query", (event: PrismaQueryEvent) => {
+      this.logger.info(`Prisma Query: ${event.query}`);
     });
 
     // Log errors
-    this.prisma.$on("error", (event: any) => {
-      const errorEvent = event as PrismaErrorEvent;
-      this.logger.error(`Prisma Error: ${errorEvent.message}`);
+    this.prisma.$on("error", (event: PrismaErrorEvent) => {
+      this.logger.error(`Prisma Error: ${event.message}`);
     });
 
     // Log info
-    this.prisma.$on("info", (event: any) => {
-      const infoEvent = event as PrismaInfoEvent;
-      this.logger.info(`Prisma Info: ${infoEvent.message}`);
+    this.prisma.$on("info", (event: PrismaInfoEvent) => {
+      this.logger.info(`Prisma Info: ${event.message}`);
     });
 
     // Log warnings
-    this.prisma.$on("warn", (event: any) => {
-      const warnEvent = event as PrismaWarnEvent;
-      this.logger.info(`Prisma Warning: ${warnEvent.message}`);
+    this.prisma.$on("warn", (event: PrismaWarnEvent) => {
+      this.logger.info(`Prisma Warning: ${event.message}`);
     });
   }
 }
