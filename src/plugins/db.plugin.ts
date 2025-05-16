@@ -18,7 +18,7 @@ interface HealthCheckResponse {
 
 const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (
   fastify,
-  options,
+  _options,
 ) => {
   // Create a logger adapter that uses fastify's logger
   const logger = {

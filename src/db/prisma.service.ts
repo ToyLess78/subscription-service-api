@@ -290,7 +290,7 @@ export class PrismaService implements IDatabaseClient {
    * Get the Prisma client instance
    * @returns The Prisma client instance
    */
-  getPrismaClient(): PrismaClientMethods {
+  getPrismaClient(): any {
     return this.prisma;
   }
 

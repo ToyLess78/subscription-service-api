@@ -17,7 +17,6 @@ import { PrismaService } from "../db/prisma.service";
  * Repository for subscription data access using Prisma
  */
 export class SubscriptionRepository {
-  private db: IDatabaseClient;
   private prisma: PrismaClient;
   private logger: {
     info: (msg: string) => void;
@@ -25,18 +24,17 @@ export class SubscriptionRepository {
   };
 
   constructor(
-    db: IDatabaseClient,
+    dbClient: IDatabaseClient,
     logger: {
       info: (msg: string) => void;
       error: (msg: string, err?: Error) => void;
     },
   ) {
-    this.db = db;
     this.logger = logger;
 
     // Get Prisma client from the database service
-    if (db instanceof PrismaService) {
-      this.prisma = db.getPrismaClient();
+    if (dbClient instanceof PrismaService) {
+      this.prisma = dbClient.getPrismaClient() as any; // Use type assertion to avoid type mismatch
     } else {
       throw new Error("Database service must be an instance of PrismaService");
     }

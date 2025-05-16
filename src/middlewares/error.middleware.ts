@@ -7,7 +7,7 @@ import { HttpStatus } from "../constants/http-status.enum";
 
 const errorMiddleware: FastifyPluginAsync = async (fastify) => {
   // Add a custom error handler
-  fastify.setErrorHandler(async (error, request, reply) => {
+  fastify.setErrorHandler(async (error, _request, reply) => {
     const isDev = fastify.config.NODE_ENV === "development";
 
     // Handle AppError instances
