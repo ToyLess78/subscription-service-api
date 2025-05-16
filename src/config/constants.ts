@@ -3,7 +3,7 @@ export const WEATHER_API = {
   ENDPOINTS: {
     CURRENT: "/current.json",
   },
-}
+};
 
 export const HTTP_STATUS = {
   OK: 200,
@@ -12,4 +12,4 @@ export const HTTP_STATUS = {
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   INTERNAL_SERVER_ERROR: 500,
-}
+};

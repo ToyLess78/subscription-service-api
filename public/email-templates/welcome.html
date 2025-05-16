@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Welcome to Weather Subscription Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            color: #2ecc71;
+            margin: 0;
+        }
+        .weather-icon {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .weather-icon img {
+            width: 80px;
+            height: 80px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .button:hover {
+            background-color: #27ae60;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to Weather Updates!</h1>
+        </div>
+        <p>Thank you for confirming your subscription to weather updates for <strong>{{city}}</strong>.</p>
+        <div class="weather-icon">
+            <img src="https://cdn-icons-png.flaticon.com/512/1779/1779940.png" alt="Weather Icon">
+        </div>
+        <p>You will now receive <strong>{{frequency}}</strong> weather updates for {{city}}.</p>
+        <p>Current weather in {{city}}: <strong>{{currentWeather}}</strong></p>
+        <p>Temperature: <strong>{{temperature}}°C</strong></p>
+        <p>You can view today's detailed forecast by visiting our website:</p>
+        <p style="text-align: center;">
+            <a href="{{baseUrl}}" class="button">View Forecast</a>
+        </p>
+        <p>If you wish to unsubscribe at any time, <a href="{{unsubscribeUrl}}">click here</a>.</p>
+        <div class="footer">
+            <p>This email was sent by the Weather Subscription Service.</p>
+            <p>&copy; 2025 Weather Subscription API. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

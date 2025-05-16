@@ -1,14 +1,15 @@
-import type { FastifyPluginAsync } from "fastify"
-import fastifySwagger from "@fastify/swagger"
-import fastifySwaggerUi from "@fastify/swagger-ui"
-import fastifyPlugin from "fastify-plugin"
+import type { FastifyPluginAsync } from "fastify";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
+import fastifyPlugin from "fastify-plugin";
 
 const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
         title: "Weather Subscription API",
-        description: "API for retrieving weather data and managing subscriptions",
+        description:
+          "API for retrieving weather data and managing subscriptions",
         version: "1.0.0",
       },
       externalDocs: {
@@ -34,7 +35,7 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
         },
       },
     },
-  })
+  });
 
   await fastify.register(fastifySwaggerUi, {
     routePrefix: "/documentation",
@@ -43,16 +44,16 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify) => {
       deepLinking: false,
     },
     uiHooks: {
-      onRequest: (request, reply, next) => {
-        next()
+      onRequest: (_request, _reply, next) => {
+        next();
       },
-      preHandler: (request, reply, next) => {
-        next()
+      preHandler: (_request, _reply, next) => {
+        next();
       },
     },
     staticCSP: true,
     transformStaticCSP: (header) => header,
-  })
-}
+  });
+};
 
-export default fastifyPlugin(swaggerPlugin)
+export default fastifyPlugin(swaggerPlugin);

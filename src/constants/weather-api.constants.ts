@@ -6,4 +6,4 @@ export const WEATHER_API = {
   ENDPOINTS: {
     CURRENT: "/current.json",
   },
-}
+};

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Subscription Confirmed | Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .icon {
+            font-size: 4rem;
+            color: #2ecc71;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .subscription-details {
+            background-color: #edf7ed;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1.5rem 0;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .subscription-details p {
+            margin-bottom: 0.5rem;
+        }
+
+        .subscription-details strong {
+            color: #2c3e50;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            margin-top: 1rem;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .error {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        #loading {
+            font-size: 1.2rem;
+            margin: 2rem 0;
+            color: #7f8c8d;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <div class="icon">✓</div>
+        <h1>Subscription Confirmed!</h1>
+        <div id="loading">Loading your subscription details...</div>
+        <div id="error" class="error hidden"></div>
+        <div id="content" class="hidden">
+            <p>Thank you for confirming your subscription to weather updates.</p>
+            <div class="subscription-details">
+                <p><strong>Email:</strong> <span id="email"></span></p>
+                <p><strong>City:</strong> <span id="city"></span></p>
+                <p><strong>Frequency:</strong> <span id="frequency"></span></p>
+            </div>
+            <p>You will now receive weather updates according to your preferences.</p>
+            <p>You can unsubscribe at any time by clicking the unsubscribe link in any email we send you.</p>
+            <a href="/" class="button">Back to Homepage</a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 Weather Subscription API. All rights reserved.</p>
+</footer>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const token = urlParams.get('token')
+
+        const loadingElement = document.getElementById("loading")
+        const errorElement = document.getElementById("error")
+        const contentElement = document.getElementById("content")
+        const emailElement = document.getElementById("email")
+        const cityElement = document.getElementById("city")
+        const frequencyElement = document.getElementById("frequency")
+
+        function showError(message) {
+            errorElement.textContent = message
+            errorElement.classList.remove("hidden")
+            loadingElement.classList.add("hidden")
+        }
+
+        function showContent() {
+            contentElement.classList.remove("hidden")
+            loadingElement.classList.add("hidden")
+        }
+
+        async function confirmSubscription() {
+            if (!token) {
+                showError("Invalid confirmation link. No token provided.")
+                return
+            }
+
+            try {
+                const response = await fetch(`/api/v1/confirm/${token}`)
+                const data = await response.json()
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Failed to confirm subscription")
+                }
+
+                // Display subscription details
+                emailElement.textContent = data.subscription.email
+                cityElement.textContent = data.subscription.city
+                frequencyElement.textContent = data.subscription.frequency
+
+                showContent()
+            } catch (error) {
+                showError(error.message || "An error occurred while confirming your subscription")
+            }
+        }
+
+        // Call the confirm function when page loads
+        confirmSubscription()
+    })
+</script>
+</body>
+</html>

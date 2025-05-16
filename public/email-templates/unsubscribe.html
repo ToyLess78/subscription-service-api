@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Unsubscribe Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            color: #e74c3c;
+            margin: 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>You've Been Unsubscribed</h1>
+        </div>
+        <p>You have successfully unsubscribed from weather updates for <strong>{{city}}</strong>.</p>
+        <p>We're sorry to see you go! If you'd like to subscribe again in the future, you're always welcome to return to our service.</p>
+        <p>Was there something we could have done better? We'd appreciate your feedback:</p>
+        <p style="text-align: center;">
+            <a href="{{feedbackUrl}}" class="button">Send Feedback</a>
+        </p>
+        <p>If you unsubscribed by mistake, you can <a href="{{baseUrl}}">subscribe again here</a>.</p>
+        <div class="footer">
+            <p>This email was sent by the Weather Subscription Service.</p>
+            <p>&copy; 2025 Weather Subscription API. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

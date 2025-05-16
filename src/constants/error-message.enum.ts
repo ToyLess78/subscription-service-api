@@ -36,4 +36,16 @@ export enum ErrorMessage {
   DATABASE_ALREADY_CONNECTED = "Database is already connected",
   DATABASE_NOT_CONNECTED = "Database is not connected",
   DATABASE_DISCONNECTION_ERROR = "Failed to disconnect from database",
+
+  // Email errors
+  EMAIL_SENDING_ERROR = "Failed to send email",
+  INVALID_EMAIL = "Invalid email address",
+  EMAIL_TEMPLATE_ERROR = "Failed to render email template",
+
+  // Subscription errors
+  SUBSCRIPTION_ALREADY_EXISTS = "Subscription already exists",
+  SUBSCRIPTION_NOT_FOUND = "Subscription not found",
+  INVALID_SUBSCRIPTION_TOKEN = "Invalid subscription token",
+  EXPIRED_SUBSCRIPTION_TOKEN = "Subscription token has expired",
+  INVALID_FREQUENCY = "Invalid frequency. Must be 'hourly' or 'daily'",
 }

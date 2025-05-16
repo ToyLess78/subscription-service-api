@@ -1,20 +1,21 @@
-import type { FastifyPluginAsync } from "fastify"
-import { WeatherController } from "../controllers/weather.controller"
-import { WeatherService } from "../services/weather.service"
-import { weatherRequestSchema } from "../models/weather.schema"
-import { ApiPath } from "../constants/api-path.enum"
+import type { FastifyPluginAsync } from "fastify";
+import { WeatherController } from "../controllers/weather.controller";
+import { WeatherService } from "../services/weather.service";
+import { weatherRequestSchema } from "../models/weather.schema";
+import { ApiPath } from "../constants/api-path.enum";
 
 const weatherRoutes: FastifyPluginAsync = async (fastify) => {
   // Create service and controller instances
-  const weatherService = new WeatherService(fastify.config.WEATHER_API_KEY)
-  const weatherController = new WeatherController(weatherService)
+  const weatherService = new WeatherService(fastify.config.WEATHER_API_KEY);
+  const weatherController = new WeatherController(weatherService);
 
   // GET /weather endpoint
   fastify.get(ApiPath.WEATHER, {
     schema: {
       tags: ["weather"],
       summary: "Get current weather by city",
-      description: "Retrieves current weather information for the specified city",
+      description:
+        "Retrieves current weather information for the specified city",
       querystring: weatherRequestSchema,
       response: {
         200: {
@@ -32,7 +33,7 @@ const weatherRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     handler: weatherController.getCurrentWeather.bind(weatherController),
-  })
-}
+  });
+};
 
-export default weatherRoutes
+export default weatherRoutes;

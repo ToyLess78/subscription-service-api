@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Unsubscribed | Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .icon {
+            font-size: 4rem;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .subscription-details {
+            background-color: #fadbd8;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1.5rem 0;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .subscription-details p {
+            margin-bottom: 0.5rem;
+        }
+
+        .subscription-details strong {
+            color: #2c3e50;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .button.primary {
+            background-color: #2ecc71;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+        }
+
+        .error {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        #loading {
+            font-size: 1.2rem;
+            margin: 2rem 0;
+            color: #7f8c8d;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .feedback-form {
+            max-width: 400px;
+            margin: 1.5rem auto;
+            text-align: left;
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            min-height: 100px;
+        }
+
+        .form-group button {
+            padding: 0.8rem 1.5rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <div class="icon">✓</div>
+        <h1>Successfully Unsubscribed</h1>
+        <div id="loading">Processing your unsubscription...</div>
+        <div id="error" class="error hidden"></div>
+        <div id="content" class="hidden">
+            <p>You have been successfully unsubscribed from weather updates.</p>
+            <div class="subscription-details">
+                <p><strong>Email:</strong> <span id="email"></span></p>
+                <p><strong>City:</strong> <span id="city"></span></p>
+            </div>
+            <p>We're sorry to see you go! If you'd like to subscribe again in the future, you're always welcome back.</p>
+            <div>
+                <button id="feedbackBtn" class="button">Share Feedback</button>
+                <a href="/" class="button primary">Subscribe Again</a>
+            </div>
+
+            <div id="feedbackForm" class="feedback-form">
+                <h3>We value your feedback</h3>
+                <p>Please let us know why you unsubscribed:</p>
+                <div class="form-group">
+                    <textarea id="feedbackText" placeholder="Your feedback helps us improve..."></textarea>
+                </div>
+                <div class="form-group">
+                    <button id="submitFeedback">Send Feedback</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 Weather Subscription API. All rights reserved.</p>
+</footer>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const token = urlParams.get('token')
+
+        const loadingElement = document.getElementById("loading")
+        const errorElement = document.getElementById("error")
+        const contentElement = document.getElementById("content")
+        const emailElement = document.getElementById("email")
+        const cityElement = document.getElementById("city")
+        const feedbackBtn = document.getElementById("feedbackBtn")
+        const feedbackForm = document.getElementById("feedbackForm")
+        const feedbackText = document.getElementById("feedbackText")
+        const submitFeedback = document.getElementById("submitFeedback")
+
+        function showError(message) {
+            errorElement.textContent = message
+            errorElement.classList.remove("hidden")
+            loadingElement.classList.add("hidden")
+        }
+
+        function showContent() {
+            contentElement.classList.remove("hidden")
+            loadingElement.classList.add("hidden")
+        }
+
+        async function processUnsubscription() {
+            if (!token) {
+                showError("Invalid unsubscribe link. No token provided.")
+                return
+            }
+
+            try {
+                const response = await fetch(`/api/v1/unsubscribe/${token}`)
+                const data = await response.json()
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Failed to process unsubscription")
+                }
+
+                // Display subscription details
+                emailElement.textContent = data.subscription.email
+                cityElement.textContent = data.subscription.city
+
+                showContent()
+            } catch (error) {
+                showError(error.message || "An error occurred while processing your unsubscription")
+            }
+        }
+
+        // Toggle feedback form
+        feedbackBtn.addEventListener("click", () => {
+            if (feedbackForm.style.display === "block") {
+                feedbackForm.style.display = "none"
+                feedbackBtn.textContent = "Share Feedback"
+            } else {
+                feedbackForm.style.display = "block"
+                feedbackBtn.textContent = "Hide Form"
+            }
+        })
+
+        // Handle feedback submission
+        submitFeedback.addEventListener("click", async () => {
+            const feedback = feedbackText.value.trim()
+
+            if (!feedback) {
+                alert("Please enter your feedback.")
+                return
+            }
+
+            submitFeedback.textContent = "Sending..."
+            submitFeedback.disabled = true
+
+            // This would normally send to an API, but for this example, we'll just simulate success
+            setTimeout(() => {
+                feedbackForm.innerHTML = "<p>Thank you for your feedback!</p>"
+                feedbackBtn.textContent = "Feedback Sent"
+                feedbackBtn.disabled = true
+            }, 1000)
+        })
+
+        // Call the unsubscribe function when page loads
+        processUnsubscription()
+    })
+</script>
+</body>
+</html>
