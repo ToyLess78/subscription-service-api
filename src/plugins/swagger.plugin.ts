@@ -3,12 +3,8 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import fastifyPlugin from "fastify-plugin";
 import { ApiPath } from "../constants/api-path.enum";
-import {
-  subscriptionSchema,
-  createSubscriptionSchema,
-  subscriptionResponseSchema,
-} from "../models/subscription.schema";
-import { weatherSchema, weatherRequestSchema } from "../models/weather.schema";
+import { subscriptionSchema } from "../models/subscription.schema";
+import { weatherSchema } from "../models/weather.schema";
 
 const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
   // @ts-ignore
@@ -40,12 +36,9 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
       ],
       components: {
         schemas: {
-          // Register schemas for Swagger documentation
+          // Register only the required schemas for Swagger documentation
           Subscription: subscriptionSchema,
-          CreateSubscription: createSubscriptionSchema,
-          SubscriptionResponse: subscriptionResponseSchema,
           Weather: weatherSchema,
-          WeatherRequest: weatherRequestSchema,
         },
       },
     },
@@ -71,12 +64,17 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
     transformStaticCSP: (header): string => header,
   });
 
-  // Add a redirect from /api to the documentation
-  fastify.get("/api", (_request, reply): Promise<void> => {
-    return reply.redirect(
-      302,
-      ApiPath.DOCUMENTATION,
-    ) as unknown as Promise<void>;
+  // Add a redirect from /api to the documentation but hide it from Swagger docs
+  fastify.get("/api", {
+    schema: {
+      hide: true,
+    },
+    handler: (_request, reply): Promise<void> => {
+      return reply.redirect(
+        302,
+        ApiPath.DOCUMENTATION,
+      ) as unknown as Promise<void>;
+    },
   });
 };
 

@@ -21,9 +21,11 @@ async function staticPlugin(fastify: FastifyInstance): Promise<void> {
   );
 
   // Setup redirection from /confirm/:token to confirmation.html with token as query param
-  fastify.get(
-    `/confirm/:token`,
-    (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  fastify.get(`/confirm/:token`, {
+    schema: {
+      hide: true,
+    },
+    handler: (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
       // Type assertion for params
       const params = request.params as { token: string };
       const token = params.token;
@@ -32,12 +34,14 @@ async function staticPlugin(fastify: FastifyInstance): Promise<void> {
         `/confirmation.html?token=${token}`,
       ) as unknown as Promise<void>;
     },
-  );
+  });
 
   // Setup redirection from /unsubscribe/:token to unsubscribed.html with token as query param
-  fastify.get(
-    `/unsubscribe/:token`,
-    (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  fastify.get(`/unsubscribe/:token`, {
+    schema: {
+      hide: true,
+    },
+    handler: (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
       // Type assertion for params
       const params = request.params as { token: string };
       const token = params.token;
@@ -46,7 +50,7 @@ async function staticPlugin(fastify: FastifyInstance): Promise<void> {
         `/unsubscribed.html?token=${token}`,
       ) as unknown as Promise<void>;
     },
-  );
+  });
 }
 
 export default fastifyPlugin(staticPlugin);
