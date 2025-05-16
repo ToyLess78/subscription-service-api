@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import type { PrismaClient } from "@prisma/client";
+import type { SubscriptionModel } from "../db/prisma.service";
 import {
   SubscriptionFrequency,
   SubscriptionStatus,
@@ -14,7 +14,7 @@ import { addHours, addDays, isAfter } from "date-fns";
 export class CronService {
   // Change from private to protected to allow access in plugin
   protected jobs: Map<string, CronJob> = new Map();
-  private prisma: PrismaClient;
+  private prisma: any; // Use any type to avoid TypeScript errors
   private weatherService: WeatherService;
   private emailService: EmailService;
   private logger: {
@@ -23,7 +23,7 @@ export class CronService {
   };
 
   constructor(
-    prisma: PrismaClient,
+    prisma: any,
     weatherService: WeatherService,
     emailService: EmailService,
     logger: {
@@ -70,9 +70,9 @@ export class CronService {
   async scheduleJob(subscriptionId: string): Promise<void> {
     try {
       // Get subscription details
-      const subscription = await this.prisma.subscription.findUnique({
+      const subscription = (await this.prisma.subscription.findUnique({
         where: { id: subscriptionId },
-      });
+      })) as SubscriptionModel | null;
 
       if (
         !subscription ||
@@ -156,9 +156,9 @@ export class CronService {
   private async executeJob(subscriptionId: string): Promise<void> {
     try {
       // Get subscription details
-      const subscription = await this.prisma.subscription.findUnique({
+      const subscription = (await this.prisma.subscription.findUnique({
         where: { id: subscriptionId },
-      });
+      })) as SubscriptionModel | null;
 
       if (
         !subscription ||

@@ -7,24 +7,56 @@ import { ErrorMessage } from "../constants/error-message.enum";
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
+import type { PrismaClient } from "@prisma/client";
 
-// Define a more specific type for PrismaClient
-type PrismaClientType = {
-  $connect: () => Promise<void>;
-  $disconnect: () => Promise<void>;
-  $on: (eventType: string, callback: (event: unknown) => void) => void;
-  $queryRawUnsafe<T = unknown>(query: string, ...values: unknown[]): Promise<T>;
+// Define a more specific type for PrismaClient that includes our custom types
+export type PrismaClientType = PrismaClient & {
   subscription: {
-    create: (args: { data: Record<string, unknown> }) => Promise<unknown>;
+    create: (args: {
+      data: SubscriptionCreateInput;
+    }) => Promise<SubscriptionModel>;
     findUnique: (args: {
       where: Record<string, unknown>;
-    }) => Promise<unknown | null>;
+    }) => Promise<SubscriptionModel | null>;
+    findMany: (args: {
+      where?: Record<string, unknown>;
+    }) => Promise<SubscriptionModel[]>;
     update: (args: {
       where: Record<string, unknown>;
-      data: Record<string, unknown>;
-    }) => Promise<unknown>;
+      data: SubscriptionUpdateInput;
+    }) => Promise<SubscriptionModel>;
   };
+  $on: <T extends "query" | "error" | "info" | "warn">(
+    eventType: T,
+    callback: (event: any) => void,
+  ) => void;
 };
+
+// Define custom types for Subscription model
+export interface SubscriptionModel {
+  id: string;
+  email: string;
+  city: string;
+  frequency: string;
+  status: string;
+  token: string;
+  tokenExpiry: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  lastSentAt: Date | null;
+  nextScheduledAt: Date | null;
+}
+
+// Define input types for Subscription operations
+export type SubscriptionCreateInput = Omit<
+  SubscriptionModel,
+  "id" | "createdAt" | "updatedAt"
+> & {
+  lastSentAt?: Date | null;
+  nextScheduledAt?: Date | null;
+};
+
+export type SubscriptionUpdateInput = Partial<SubscriptionModel>;
 
 /**
  * Event interface for Prisma query events
@@ -147,6 +179,8 @@ export class PrismaService implements IDatabaseClient {
             token_expiry DateTime
             created_at   DateTime @default(now())
             updated_at   DateTime @updatedAt
+            last_sent_at DateTime?
+            next_scheduled_at DateTime?
             
             @@unique([email, city])
           }
@@ -343,25 +377,25 @@ export class PrismaService implements IDatabaseClient {
    */
   private setupLogging(): void {
     // Log queries
-    this.prisma.$on("query", (event: unknown) => {
+    this.prisma.$on("query", (event: any) => {
       const queryEvent = event as PrismaQueryEvent;
       this.logger.info(`Prisma Query: ${queryEvent.query}`);
     });
 
     // Log errors
-    this.prisma.$on("error", (event: unknown) => {
+    this.prisma.$on("error", (event: any) => {
       const errorEvent = event as PrismaErrorEvent;
       this.logger.error(`Prisma Error: ${errorEvent.message}`);
     });
 
     // Log info
-    this.prisma.$on("info", (event: unknown) => {
+    this.prisma.$on("info", (event: any) => {
       const infoEvent = event as PrismaInfoEvent;
       this.logger.info(`Prisma Info: ${infoEvent.message}`);
     });
 
     // Log warnings
-    this.prisma.$on("warn", (event: unknown) => {
+    this.prisma.$on("warn", (event: any) => {
       const warnEvent = event as PrismaWarnEvent;
       this.logger.info(`Prisma Warning: ${warnEvent.message}`);
     });

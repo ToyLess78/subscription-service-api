@@ -11,22 +11,7 @@ import {
   SubscriptionNotFoundError,
 } from "../utils/errors";
 import { ErrorMessage } from "../constants/error-message.enum";
-import { PrismaService } from "../db/prisma.service";
-
-// Define a type for the Prisma Subscription model
-interface PrismaSubscription {
-  id: string;
-  email: string;
-  city: string;
-  frequency: string;
-  status: string;
-  token: string;
-  tokenExpiry: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  lastSentAt: Date | null;
-  nextScheduledAt: Date | null;
-}
+import { PrismaService, type SubscriptionModel } from "../db/prisma.service";
 
 /**
  * Repository for subscription data access using Prisma
@@ -81,11 +66,18 @@ export class SubscriptionRepository {
           status: subscription.status,
           token: subscription.token,
           tokenExpiry: subscription.tokenExpiry,
+          // Only include these fields if they exist in the input
+          ...(subscription.lastSentAt !== undefined && {
+            lastSentAt: subscription.lastSentAt,
+          }),
+          ...(subscription.nextScheduledAt !== undefined && {
+            nextScheduledAt: subscription.nextScheduledAt,
+          }),
         },
       });
 
       // Map the result to a Subscription object
-      return this.mapPrismaToSubscription(result as PrismaSubscription);
+      return this.mapPrismaToSubscription(result as SubscriptionModel);
     } catch (error) {
       // Handle unique constraint violation
       if (
@@ -137,7 +129,7 @@ export class SubscriptionRepository {
         return null;
       }
 
-      return this.mapPrismaToSubscription(result as PrismaSubscription);
+      return this.mapPrismaToSubscription(result as SubscriptionModel);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Failed to find subscription by email and city", err);
@@ -166,7 +158,7 @@ export class SubscriptionRepository {
         return null;
       }
 
-      return this.mapPrismaToSubscription(result as PrismaSubscription);
+      return this.mapPrismaToSubscription(result as SubscriptionModel);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Failed to find subscription by token", err);
@@ -187,21 +179,34 @@ export class SubscriptionRepository {
    */
   async update(
     id: string,
-    data: Partial<Pick<Subscription, "status" | "token" | "tokenExpiry">>,
+    data: Partial<
+      Pick<
+        Subscription,
+        "status" | "token" | "tokenExpiry" | "lastSentAt" | "nextScheduledAt"
+      >
+    >,
   ): Promise<Subscription> {
     try {
+      // Create an update object with only the fields that are provided
+      const updateData: Record<string, unknown> = {};
+
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.token !== undefined) updateData.token = data.token;
+      if (data.tokenExpiry !== undefined)
+        updateData.tokenExpiry = data.tokenExpiry;
+      if (data.lastSentAt !== undefined)
+        updateData.lastSentAt = data.lastSentAt;
+      if (data.nextScheduledAt !== undefined)
+        updateData.nextScheduledAt = data.nextScheduledAt;
+
       const result = await this.prisma.subscription.update({
         where: {
           id,
         },
-        data: {
-          status: data.status,
-          token: data.token,
-          tokenExpiry: data.tokenExpiry,
-        },
+        data: updateData,
       });
 
-      return this.mapPrismaToSubscription(result as PrismaSubscription);
+      return this.mapPrismaToSubscription(result as SubscriptionModel);
     } catch (error) {
       // Handle record not found
       if (
@@ -235,17 +240,21 @@ export class SubscriptionRepository {
     nextScheduledAt: Date | null,
   ): Promise<Subscription> {
     try {
+      // Create an update object with only the fields that are provided
+      const updateData: Record<string, unknown> = {};
+
+      if (lastSentAt !== undefined) updateData.lastSentAt = lastSentAt;
+      if (nextScheduledAt !== undefined)
+        updateData.nextScheduledAt = nextScheduledAt;
+
       const result = await this.prisma.subscription.update({
         where: {
           id,
         },
-        data: {
-          lastSentAt,
-          nextScheduledAt,
-        },
+        data: updateData,
       });
 
-      return this.mapPrismaToSubscription(result as PrismaSubscription);
+      return this.mapPrismaToSubscription(result as SubscriptionModel);
     } catch (error) {
       // Handle record not found
       if (
@@ -278,7 +287,7 @@ export class SubscriptionRepository {
       });
 
       return results.map((result) =>
-        this.mapPrismaToSubscription(result as PrismaSubscription),
+        this.mapPrismaToSubscription(result as SubscriptionModel),
       );
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -299,15 +308,19 @@ export class SubscriptionRepository {
     try {
       const now = new Date();
 
+      // Use type assertion to avoid TypeScript errors with the OR condition
       const results = await this.prisma.subscription.findMany({
         where: {
           status: "CONFIRMED",
-          OR: [{ nextScheduledAt: null }, { nextScheduledAt: { lte: now } }],
-        },
+          OR: [
+            { nextScheduledAt: null } as any,
+            { nextScheduledAt: { lte: now } } as any,
+          ],
+        } as any,
       });
 
       return results.map((result) =>
-        this.mapPrismaToSubscription(result as PrismaSubscription),
+        this.mapPrismaToSubscription(result as SubscriptionModel),
       );
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -325,7 +338,7 @@ export class SubscriptionRepository {
    * @returns Subscription object
    */
   private mapPrismaToSubscription(
-    prismaSubscription: PrismaSubscription,
+    prismaSubscription: SubscriptionModel,
   ): Subscription {
     return {
       id: prismaSubscription.id,
