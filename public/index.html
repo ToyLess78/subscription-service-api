@@ -215,6 +215,19 @@
             font-size: 0.9rem;
         }
 
+        .api-docs-link {
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .api-docs-link:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 600px) {
             .weather-body {
                 flex-direction: column;
@@ -304,6 +317,7 @@
 
 <footer>
     <p>&copy; 2025 Weather Subscription API. All rights reserved.</p>
+    <a href="/documentation" class="api-docs-link">API Documentation</a>
 </footer>
 
 <script>
@@ -387,7 +401,7 @@
         function showSuccess(message) {
             successElement.textContent = message
             successElement.classList.remove("hidden")
-            
+
             // Auto-hide success message after 5 seconds
             setTimeout(() => {
                 hideSuccess()
@@ -429,7 +443,7 @@
         // Handle subscription form submission
         subscriptionForm.addEventListener("submit", async (event) => {
             event.preventDefault()
-            
+
             const email = emailInput.value.trim()
             const city = citySub.value.trim()
             const frequency = frequencySelect.value
@@ -465,7 +479,7 @@
                 // Clear form
                 emailInput.value = ""
                 citySub.value = ""
-                
+
                 // Show success message
                 showSuccess("Subscription successful! Please check your email to confirm.")
             } catch (error) {

@@ -1,5 +1,3 @@
-// eslint.config.js
-// CommonJS syntax for ESLint v9 configuration
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 module.exports = [
