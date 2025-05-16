@@ -67,9 +67,6 @@ export class SubscriptionController {
         subscription,
       });
     } catch (error) {
-      // Log the error for debugging
-      console.error("Subscription error:", error);
-
       // Re-throw the error to be handled by the error middleware
       throw error;
     }
@@ -99,9 +96,6 @@ export class SubscriptionController {
         subscription,
       });
     } catch (error) {
-      // Log the error for debugging
-      console.error("Confirmation error:", error);
-
       // Re-throw the error to be handled by the error middleware
       throw error;
     }
@@ -130,9 +124,6 @@ export class SubscriptionController {
         subscription,
       });
     } catch (error) {
-      // Log the error for debugging
-      console.error("Unsubscribe error:", error);
-
       // Re-throw the error to be handled by the error middleware
       throw error;
     }

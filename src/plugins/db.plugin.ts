@@ -19,12 +19,15 @@ interface HealthCheckResponse {
 const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (
   fastify,
   _options,
-) => {
+): Promise<void> => {
   // Create a logger adapter that uses fastify's logger
   const logger = {
-    info: (msg: string) => fastify.log.info(`[Database] ${msg}`),
-    error: (msg: string, err?: Error) =>
-      fastify.log.error({ err, msg: `[Database] ${msg}` }),
+    info: (msg: string): void => {
+      fastify.log.info(`[Database] ${msg}`);
+    },
+    error: (msg: string, err?: Error): void => {
+      fastify.log.error({ err, msg: `[Database] ${msg}` });
+    },
   };
 
   // Initialize the database client
@@ -60,7 +63,7 @@ const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (
   }
 
   // Close the connection when the fastify instance is closed
-  fastify.addHook("onClose", async (instance) => {
+  fastify.addHook("onClose", async (instance): Promise<void> => {
     try {
       await instance.db.disconnect();
     } catch (error) {
@@ -69,7 +72,7 @@ const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (
   });
 
   // Add a health check route that includes database status
-  fastify.addHook("onRoute", (routeOptions) => {
+  fastify.addHook("onRoute", (routeOptions): void => {
     if (
       routeOptions.url === "/api/v1/health" &&
       routeOptions.method === "GET"
@@ -79,7 +82,10 @@ const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (
 
       // Replace the handler with one that includes database status
       // Fix: Use a proper function to maintain 'this' context
-      routeOptions.handler = async function (request, reply) {
+      routeOptions.handler = async function (
+        request,
+        reply,
+      ): Promise<HealthCheckResponse> {
         // Fix: Call the original handler with the correct context and cast the result
         const originalResponse = (await originalHandler.call(
           this,

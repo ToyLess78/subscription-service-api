@@ -8,15 +8,23 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
-/**
- * Interface for Prisma Client methods we use
- */
-interface PrismaClientMethods {
+// Define a more specific type for PrismaClient
+type PrismaClientType = {
   $connect: () => Promise<void>;
   $disconnect: () => Promise<void>;
-  $on: (eventType: string, callback: (event: any) => void) => void;
-  $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Promise<T>;
-}
+  $on: (eventType: string, callback: (event: unknown) => void) => void;
+  $queryRawUnsafe<T = unknown>(query: string, ...values: unknown[]): Promise<T>;
+  subscription: {
+    create: (args: { data: Record<string, unknown> }) => Promise<unknown>;
+    findUnique: (args: {
+      where: Record<string, unknown>;
+    }) => Promise<unknown | null>;
+    update: (args: {
+      where: Record<string, unknown>;
+      data: Record<string, unknown>;
+    }) => Promise<unknown>;
+  };
+};
 
 /**
  * Event interface for Prisma query events
@@ -56,7 +64,7 @@ interface PrismaWarnEvent {
  * Prisma database service
  */
 export class PrismaService implements IDatabaseClient {
-  private prisma: PrismaClientMethods;
+  private prisma: PrismaClientType;
   private status: DatabaseConnectionStatus;
   private logger: {
     info: (msg: string) => void;
@@ -74,7 +82,10 @@ export class PrismaService implements IDatabaseClient {
 
     // Initialize Prisma client
     try {
-      const { PrismaClient } = require("@prisma/client");
+      // Import PrismaClient dynamically
+      const { PrismaClient } = require("@prisma/client") as {
+        PrismaClient: new (options: unknown) => PrismaClientType;
+      };
       this.prisma = new PrismaClient({
         log: [
           { level: "query", emit: "event" },
@@ -82,7 +93,7 @@ export class PrismaService implements IDatabaseClient {
           { level: "info", emit: "event" },
           { level: "warn", emit: "event" },
         ],
-      }) as PrismaClientMethods;
+      });
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Failed to initialize Prisma client", err);
@@ -145,6 +156,7 @@ export class PrismaService implements IDatabaseClient {
 
       // Try to require the Prisma client
       try {
+        // Import PrismaClient dynamically
         require("@prisma/client");
       } catch (error) {
         // If the error is about missing the Prisma client, generate it
@@ -290,7 +302,7 @@ export class PrismaService implements IDatabaseClient {
    * Get the Prisma client instance
    * @returns The Prisma client instance
    */
-  getPrismaClient(): any {
+  getPrismaClient(): PrismaClientType {
     return this.prisma;
   }
 
@@ -331,23 +343,27 @@ export class PrismaService implements IDatabaseClient {
    */
   private setupLogging(): void {
     // Log queries
-    this.prisma.$on("query", (event: PrismaQueryEvent) => {
-      this.logger.info(`Prisma Query: ${event.query}`);
+    this.prisma.$on("query", (event: unknown) => {
+      const queryEvent = event as PrismaQueryEvent;
+      this.logger.info(`Prisma Query: ${queryEvent.query}`);
     });
 
     // Log errors
-    this.prisma.$on("error", (event: PrismaErrorEvent) => {
-      this.logger.error(`Prisma Error: ${event.message}`);
+    this.prisma.$on("error", (event: unknown) => {
+      const errorEvent = event as PrismaErrorEvent;
+      this.logger.error(`Prisma Error: ${errorEvent.message}`);
     });
 
     // Log info
-    this.prisma.$on("info", (event: PrismaInfoEvent) => {
-      this.logger.info(`Prisma Info: ${event.message}`);
+    this.prisma.$on("info", (event: unknown) => {
+      const infoEvent = event as PrismaInfoEvent;
+      this.logger.info(`Prisma Info: ${infoEvent.message}`);
     });
 
     // Log warnings
-    this.prisma.$on("warn", (event: PrismaWarnEvent) => {
-      this.logger.info(`Prisma Warning: ${event.message}`);
+    this.prisma.$on("warn", (event: unknown) => {
+      const warnEvent = event as PrismaWarnEvent;
+      this.logger.info(`Prisma Warning: ${warnEvent.message}`);
     });
   }
 }

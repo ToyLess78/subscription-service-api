@@ -13,10 +13,7 @@ interface LoggerOptions {
 
 // Define the serializer types
 interface LogSerializers {
-  req?: (request: FastifyRequest) => Record<string, unknown>;
-  res?: (reply: FastifyReply) => Record<string, unknown>;
-  err?: (error: Error) => Record<string, unknown>;
-  [key: string]: ((value: any) => Record<string, unknown>) | undefined;
+  [key: string]: ((value: unknown) => Record<string, unknown>) | undefined;
 }
 
 // Extend the FastifyBaseLogger interface to include serializers
@@ -29,7 +26,7 @@ declare module "fastify" {
 const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (
   fastify,
   options,
-) => {
+): Promise<void> => {
   const { prettyPrint = true, redactPaths = ["req.headers.authorization"] } =
     options;
 
@@ -37,7 +34,8 @@ const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (
   if (prettyPrint && fastify.log.level !== "error") {
     // Override the default logger serializers for prettier output
     fastify.log.serializers = {
-      req: (request: FastifyRequest) => {
+      req: (value: unknown): Record<string, unknown> => {
+        const request = value as FastifyRequest;
         const reqInfo: RecordWithNestedValues = {
           method: request.method,
           url: request.url,
@@ -49,7 +47,8 @@ const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (
         // Redact sensitive information
         return redactSensitiveInfo(reqInfo, redactPaths);
       },
-      res: (reply: FastifyReply) => {
+      res: (value: unknown): Record<string, unknown> => {
+        const reply = value as FastifyReply;
         return {
           statusCode: reply.statusCode,
         };
@@ -58,13 +57,13 @@ const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (
   }
 
   // Add request ID to each request
-  fastify.addHook("onRequest", (request, _reply, done) => {
+  fastify.addHook("onRequest", (request, _reply, done): void => {
     request.id = request.id || randomUUID();
     done();
   });
 
   // Log request start
-  fastify.addHook("onRequest", (request, _reply, done) => {
+  fastify.addHook("onRequest", (request, _reply, done): void => {
     request.log.info({
       msg: "Request received",
       reqId: request.id,
@@ -76,7 +75,7 @@ const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (
   });
 
   // Log request completion with timing
-  fastify.addHook("onResponse", (request, reply, done) => {
+  fastify.addHook("onResponse", (request, reply, done): void => {
     const responseTime = reply.getResponseTime();
     request.log.info({
       msg: "Request completed",
@@ -90,7 +89,7 @@ const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (
   });
 
   // Log errors
-  fastify.addHook("onError", (request, reply, error, done) => {
+  fastify.addHook("onError", (request, reply, error, done): void => {
     request.log.error({
       msg: "Request error",
       reqId: request.id,
@@ -105,7 +104,7 @@ const loggerPlugin: FastifyPluginAsync<LoggerOptions> = async (
   });
 
   // Create a utility to log all registered routes
-  fastify.decorate("logRoutes", () => {
+  fastify.decorate("logRoutes", (): void => {
     const routes = fastify.printRoutes();
     fastify.log.info("=== Registered Routes ===\n" + routes);
   });

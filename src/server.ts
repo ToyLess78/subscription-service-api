@@ -33,7 +33,7 @@ const fastify = Fastify({
 });
 
 // Register plugins
-const start = async () => {
+const start = async (): Promise<void> => {
   try {
     // Register configuration plugin
     await fastify.register(config);
@@ -86,7 +86,7 @@ process.on("unhandledRejection", (err) => {
 
 // Handle uncaught exceptions
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught exception:", err);
+  fastify.log.error("Uncaught exception:", err);
   process.exit(1);
 });
 

@@ -8,12 +8,17 @@ import { WeatherService } from "../services/weather.service";
 import { ApiPath } from "../constants/api-path.enum";
 import { SubscriptionFrequency } from "../models/subscription.model";
 
-const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
+const subscriptionRoutes: FastifyPluginAsync = async (
+  fastify,
+): Promise<void> => {
   // Create dependencies
   const logger = {
-    info: (msg: string) => fastify.log.info(`[Subscription] ${msg}`),
-    error: (msg: string, err?: Error) =>
-      fastify.log.error({ err, msg: `[Subscription] ${msg}` }),
+    info: (msg: string): void => {
+      fastify.log.info(`[Subscription] ${msg}`);
+    },
+    error: (msg: string, err?: Error): void => {
+      fastify.log.error({ err, msg: `[Subscription] ${msg}` });
+    },
   };
 
   const subscriptionRepository = new SubscriptionRepository(fastify.db, logger);

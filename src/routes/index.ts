@@ -10,7 +10,7 @@ export interface HealthCheckResponse {
   [key: string]: unknown;
 }
 
-const routes: FastifyPluginAsync = async (fastify) => {
+const routes: FastifyPluginAsync = async (fastify): Promise<void> => {
   // Health check route
   fastify.get(ApiPath.HEALTH, {
     schema: {
@@ -62,7 +62,11 @@ const routes: FastifyPluginAsync = async (fastify) => {
         },
       },
     },
-    handler: async () => {
+    handler: async (): Promise<{
+      name: string;
+      version: string;
+      environment: string;
+    }> => {
       return {
         name: "weather-subscription-api",
         version: fastify.config.API_VERSION,

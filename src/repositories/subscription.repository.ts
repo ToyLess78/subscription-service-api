@@ -13,6 +13,19 @@ import {
 import { ErrorMessage } from "../constants/error-message.enum";
 import { PrismaService } from "../db/prisma.service";
 
+// Define a type for the Prisma Subscription model
+interface PrismaSubscription {
+  id: string;
+  email: string;
+  city: string;
+  frequency: string;
+  status: string;
+  token: string;
+  tokenExpiry: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 /**
  * Repository for subscription data access using Prisma
  */
@@ -34,7 +47,8 @@ export class SubscriptionRepository {
 
     // Get Prisma client from the database service
     if (dbClient instanceof PrismaService) {
-      this.prisma = dbClient.getPrismaClient() as any; // Use type assertion to avoid type mismatch
+      // Use type assertion with a more specific type
+      this.prisma = dbClient.getPrismaClient() as unknown as PrismaClient;
     } else {
       throw new Error("Database service must be an instance of PrismaService");
     }
@@ -69,7 +83,7 @@ export class SubscriptionRepository {
       });
 
       // Map the result to a Subscription object
-      return this.mapPrismaToSubscription(result);
+      return this.mapPrismaToSubscription(result as PrismaSubscription);
     } catch (error) {
       // Handle unique constraint violation
       if (
@@ -121,7 +135,7 @@ export class SubscriptionRepository {
         return null;
       }
 
-      return this.mapPrismaToSubscription(result);
+      return this.mapPrismaToSubscription(result as PrismaSubscription);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Failed to find subscription by email and city", err);
@@ -150,7 +164,7 @@ export class SubscriptionRepository {
         return null;
       }
 
-      return this.mapPrismaToSubscription(result);
+      return this.mapPrismaToSubscription(result as PrismaSubscription);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Failed to find subscription by token", err);
@@ -185,7 +199,7 @@ export class SubscriptionRepository {
         },
       });
 
-      return this.mapPrismaToSubscription(result);
+      return this.mapPrismaToSubscription(result as PrismaSubscription);
     } catch (error) {
       // Handle record not found
       if (
@@ -209,7 +223,9 @@ export class SubscriptionRepository {
    * @param prismaSubscription Prisma subscription
    * @returns Subscription object
    */
-  private mapPrismaToSubscription(prismaSubscription: any): Subscription {
+  private mapPrismaToSubscription(
+    prismaSubscription: PrismaSubscription,
+  ): Subscription {
     return {
       id: prismaSubscription.id,
       email: prismaSubscription.email,
