@@ -17,7 +17,7 @@ model Subscription {
   frequency   String
   status      String   @default("pending")
   token       String   @unique
-  tokenExpiry DateTime
+  tokenExpiry DateTime @map("token_expiry")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

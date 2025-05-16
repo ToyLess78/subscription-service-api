@@ -6,7 +6,7 @@ CREATE TABLE "subscriptions" (
     "frequency" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'pending',
     "token" TEXT NOT NULL,
-    "tokenExpiry" TIMESTAMP(3) NOT NULL,
+    "token_expiry" TIMESTAMP(3) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 

@@ -16,7 +16,7 @@ A RESTful API for weather forecasts and subscription management.
 
 - Node.js 16+
 - pnpm
-- PostgreSQL database
+- PostgreSQL database (or use Railway)
 
 ### Installation
 
@@ -90,6 +90,26 @@ To view and edit the database using Prisma Studio:
 
 ```bash
 pnpm prisma:studio
+```
+
+### Reset Your Database
+
+If you need to start fresh or encounter schema issues, you can reset your database:
+
+```bash
+chmod +x reset-db.sh
+./reset-db.sh
+```
+
+This script will:
+1. Drop all tables in your database
+2. Regenerate the Prisma client
+3. Apply all migrations from scratch
+
+Alternatively, if you want to keep your data and just apply schema changes:
+
+```bash
+npx prisma migrate dev --name fix_schema
 ```
 
 ## API Endpoints
