@@ -15,6 +15,7 @@ import startupPlugin from "./plugins/startup.plugin";
 import errorMiddleware from "./middlewares/error.middleware";
 import routes from "./routes";
 import { buildApiPath } from "./constants/api-path.enum";
+import cronPlugin from "./plugins/cron.plugin";
 
 // Create Fastify instance with logger configuration
 const fastify = Fastify({
@@ -49,6 +50,9 @@ const start = async (): Promise<void> => {
 
     // Register database plugin
     await fastify.register(dbPlugin);
+
+    // Register cron plugin (must be after database plugin)
+    await fastify.register(cronPlugin);
 
     // Register schemas plugin (must be before swagger and routes)
     await fastify.register(schemasPlugin);

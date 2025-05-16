@@ -262,6 +262,83 @@ export class EmailService {
   }
 
   /**
+   * Send a weather update email
+   * @param to Recipient email
+   * @param token Unsubscribe token
+   * @param city City name
+   * @param frequency Subscription frequency
+   * @param currentWeather Current weather description
+   * @param temperature Current temperature
+   */
+  async sendWeatherUpdateEmail(
+    to: string,
+    token: string,
+    city: string,
+    frequency: string,
+    currentWeather = "Sunny",
+    temperature = "22",
+  ): Promise<void> {
+    try {
+      const unsubscribeUrl = `${this.baseUrl}/unsubscribed.html?token=${token}`;
+
+      const templateData: EmailTemplateData = {
+        confirmationUrl: "", // Not used in weather update email
+        unsubscribeUrl,
+        city,
+        frequency,
+        baseUrl: this.baseUrl,
+        currentWeather,
+        temperature,
+      };
+
+      // Reuse the welcome email template for now
+      // In a production app, you might want to create a specific template for updates
+      const html = await this.renderTemplateFromFile(
+        "welcome.html",
+        templateData,
+      );
+
+      this.logger.info(`Sending weather update email to ${to}`);
+
+      // If Resend API key is not provided, just log the email content
+      if (!this.resend) {
+        this.logger.info(
+          `[MOCK EMAIL] To: ${to}, Subject: Weather Update for ${city}: ${currentWeather}`,
+        );
+        this.logger.info(`[MOCK EMAIL] Unsubscribe URL: ${unsubscribeUrl}`);
+        return;
+      }
+
+      // Send email using Resend
+      try {
+        const response = await this.resend.emails.send({
+          from: this.fromEmail,
+          to,
+          subject: `Weather Update for ${city}: ${currentWeather}`,
+          html,
+        });
+
+        // Check if response is successful
+        if (response && "id" in response) {
+          this.logger.info(
+            `Weather update email sent to ${to}, ID: ${response.id}`,
+          );
+        } else {
+          throw new Error("Failed to send email: No ID returned");
+        }
+      } catch (sendError) {
+        // Handle Resend API errors
+        const errorMessage =
+          sendError instanceof Error ? sendError.message : String(sendError);
+        throw new Error(`Resend API error: ${errorMessage}`);
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error(`Failed to send weather update email to ${to}`, err);
+    }
+  }
+
+  /**
    * Render an email template from a file
    * @param templateName Template name
    * @param data Template data

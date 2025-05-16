@@ -24,6 +24,8 @@ interface PrismaSubscription {
   tokenExpiry: Date;
   createdAt: Date;
   updatedAt: Date;
+  lastSentAt: Date | null;
+  nextScheduledAt: Date | null;
 }
 
 /**
@@ -219,6 +221,105 @@ export class SubscriptionRepository {
   }
 
   /**
+   * Update subscription scheduling information
+   * @param id Subscription ID
+   * @param lastSentAt Last sent time
+   * @param nextScheduledAt Next scheduled time
+   * @returns Updated subscription
+   * @throws {SubscriptionNotFoundError} If subscription not found
+   * @throws {DatabaseError} If database operation fails
+   */
+  async updateScheduling(
+    id: string,
+    lastSentAt: Date | null,
+    nextScheduledAt: Date | null,
+  ): Promise<Subscription> {
+    try {
+      const result = await this.prisma.subscription.update({
+        where: {
+          id,
+        },
+        data: {
+          lastSentAt,
+          nextScheduledAt,
+        },
+      });
+
+      return this.mapPrismaToSubscription(result as PrismaSubscription);
+    } catch (error) {
+      // Handle record not found
+      if (
+        error instanceof Error &&
+        error.message.includes("Record to update not found")
+      ) {
+        throw new SubscriptionNotFoundError();
+      }
+
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to update subscription scheduling", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
+    }
+  }
+
+  /**
+   * Get all active subscriptions
+   * @returns List of active subscriptions
+   * @throws {DatabaseError} If database operation fails
+   */
+  async findAllActive(): Promise<Subscription[]> {
+    try {
+      const results = await this.prisma.subscription.findMany({
+        where: {
+          status: "CONFIRMED",
+        },
+      });
+
+      return results.map((result) =>
+        this.mapPrismaToSubscription(result as PrismaSubscription),
+      );
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to find active subscriptions", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
+    }
+  }
+
+  /**
+   * Get subscriptions due for sending
+   * @returns List of subscriptions due for sending
+   * @throws {DatabaseError} If database operation fails
+   */
+  async findDueForSending(): Promise<Subscription[]> {
+    try {
+      const now = new Date();
+
+      const results = await this.prisma.subscription.findMany({
+        where: {
+          status: "CONFIRMED",
+          OR: [{ nextScheduledAt: null }, { nextScheduledAt: { lte: now } }],
+        },
+      });
+
+      return results.map((result) =>
+        this.mapPrismaToSubscription(result as PrismaSubscription),
+      );
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to find subscriptions due for sending", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
+    }
+  }
+
+  /**
    * Map a Prisma subscription to a Subscription object
    * @param prismaSubscription Prisma subscription
    * @returns Subscription object
@@ -236,6 +337,8 @@ export class SubscriptionRepository {
       tokenExpiry: prismaSubscription.tokenExpiry,
       createdAt: prismaSubscription.createdAt,
       updatedAt: prismaSubscription.updatedAt,
+      lastSentAt: prismaSubscription.lastSentAt,
+      nextScheduledAt: prismaSubscription.nextScheduledAt,
     };
   }
 }

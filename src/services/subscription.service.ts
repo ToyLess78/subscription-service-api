@@ -11,6 +11,7 @@ import type { EmailService } from "./email.service";
 import type { WeatherService } from "./weather.service";
 import { BadRequestError, SubscriptionNotFoundError } from "../utils/errors";
 import { ErrorMessage } from "../constants/error-message.enum";
+import type { CronService } from "./cron.service";
 
 /**
  * Service for subscription business logic
@@ -24,6 +25,7 @@ export class SubscriptionService {
     info: (msg: string) => void;
     error: (msg: string, err?: Error) => void;
   };
+  private cronService?: CronService; // Make it optional for backward compatibility
 
   constructor(
     subscriptionRepository: SubscriptionRepository,
@@ -34,12 +36,14 @@ export class SubscriptionService {
       info: (msg: string) => void;
       error: (msg: string, err?: Error) => void;
     },
+    cronService?: CronService, // Move optional parameter to the end
   ) {
     this.subscriptionRepository = subscriptionRepository;
     this.tokenService = tokenService;
     this.emailService = emailService;
     this.weatherService = weatherService;
     this.logger = logger;
+    this.cronService = cronService;
   }
 
   /**
@@ -141,6 +145,14 @@ export class SubscriptionService {
       );
     }
 
+    // Schedule cron job for this subscription if cronService is available
+    if (this.cronService) {
+      await this.cronService.scheduleJob(updatedSubscription.id);
+      this.logger.info(
+        `Scheduled cron job for subscription ${updatedSubscription.id}`,
+      );
+    }
+
     return this.mapToResponseDto(updatedSubscription);
   }
 
@@ -174,6 +186,14 @@ export class SubscriptionService {
       subscription.email,
       subscription.city,
     );
+
+    // Cancel cron job for this subscription if cronService is available
+    if (this.cronService) {
+      this.cronService.cancelJob(updatedSubscription.id);
+      this.logger.info(
+        `Cancelled cron job for subscription ${updatedSubscription.id}`,
+      );
+    }
 
     return this.mapToResponseDto(updatedSubscription);
   }

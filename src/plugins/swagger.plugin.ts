@@ -1,13 +1,14 @@
-import type { FastifyPluginAsync } from "fastify";
-import fastifySwagger from "@fastify/swagger";
-import fastifySwaggerUi from "@fastify/swagger-ui";
+import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { ApiPath } from "../constants/api-path.enum";
 import { subscriptionSchema } from "../models/subscription.schema";
 import { weatherSchema } from "../models/weather.schema";
 
 const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
-  // @ts-ignore
+  // Import fastifySwagger dynamically to avoid TypeScript errors
+  const fastifySwagger = require("@fastify/swagger");
+  const fastifySwaggerUi = require("@fastify/swagger-ui");
+
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
@@ -53,15 +54,23 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
       filter: true,
     },
     uiHooks: {
-      onRequest: (_request, _reply, next): void => {
+      onRequest: (
+        _request: FastifyRequest,
+        _reply: FastifyReply,
+        next: (err?: Error) => void,
+      ): void => {
         next();
       },
-      preHandler: (_request, _reply, next): void => {
+      preHandler: (
+        _request: FastifyRequest,
+        _reply: FastifyReply,
+        next: (err?: Error) => void,
+      ): void => {
         next();
       },
     },
     staticCSP: true,
-    transformStaticCSP: (header): string => header,
+    transformStaticCSP: (header: string): string => header,
   });
 
   // Add a redirect from /api to the documentation but hide it from Swagger docs
