@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { ApiPath } from "../core/constants";
-import fastifySwagger, { SwaggerOptions } from "@fastify/swagger";
+import fastifySwagger, { type SwaggerOptions } from "@fastify/swagger";
 import fastifySwaggerUi, {
   type FastifySwaggerUiOptions,
 } from "@fastify/swagger-ui";
