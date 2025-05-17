@@ -3,6 +3,7 @@ import weatherRoutes from "./weather.routes";
 import subscriptionRoutes from "./subscription.routes";
 import { ApiPath } from "../constants/api-path.enum";
 import cronRoutes from "./cron.routes";
+import { healthCheckResponseSchema } from "../schemas";
 
 // Define the health check response type
 export interface HealthCheckResponse {
@@ -19,22 +20,7 @@ const routes: FastifyPluginAsync = async (fastify): Promise<void> => {
       summary: "Health check endpoint",
       description: "Returns the current status of the API",
       response: {
-        200: {
-          description: "API is healthy",
-          type: "object",
-          properties: {
-            status: { type: "string" },
-            timestamp: { type: "string" },
-            database: {
-              type: "object",
-              properties: {
-                connected: { type: "boolean" },
-                lastConnected: { type: "string", nullable: true },
-                connectionAttempts: { type: "number" },
-              },
-            },
-          },
-        },
+        200: healthCheckResponseSchema,
       },
     },
     handler: async (): Promise<HealthCheckResponse> => {

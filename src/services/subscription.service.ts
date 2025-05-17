@@ -5,38 +5,42 @@ import {
   SubscriptionStatus,
   type SubscriptionResponseDto,
 } from "../models/subscription.model";
-import type { SubscriptionRepository } from "../repositories/subscription.repository";
-import type { TokenService } from "./token.service";
-import type { EmailService } from "./email.service";
-import type { WeatherService } from "./weather.service";
-import { BadRequestError, SubscriptionNotFoundError } from "../utils/errors";
+import { BadRequestError } from "../utils/errors";
 import { ErrorMessage } from "../constants/error-message.enum";
-import type { CronService } from "./cron.service";
+import type {
+  ISubscriptionService,
+  ISubscriptionRepository,
+  ITokenService,
+  IEmailService,
+  IWeatherService,
+  ICronService,
+} from "../core/interfaces/services.interface";
+import { SubscriptionNotFoundError } from "../core/errors";
 
 /**
  * Service for subscription business logic
  */
-export class SubscriptionService {
-  private subscriptionRepository: SubscriptionRepository;
-  private tokenService: TokenService;
-  private emailService: EmailService;
-  private weatherService: WeatherService;
+export class SubscriptionService implements ISubscriptionService {
+  private subscriptionRepository: ISubscriptionRepository;
+  private tokenService: ITokenService;
+  private emailService: IEmailService;
+  private weatherService: IWeatherService;
   private logger: {
     info: (msg: string) => void;
     error: (msg: string, err?: Error) => void;
   };
-  private cronService?: CronService; // Make it optional for backward compatibility
+  private cronService?: ICronService; // Make it optional for backward compatibility
 
   constructor(
-    subscriptionRepository: SubscriptionRepository,
-    tokenService: TokenService,
-    emailService: EmailService,
-    weatherService: WeatherService,
+    subscriptionRepository: ISubscriptionRepository,
+    tokenService: ITokenService,
+    emailService: IEmailService,
+    weatherService: IWeatherService,
     logger: {
       info: (msg: string) => void;
       error: (msg: string, err?: Error) => void;
     },
-    cronService?: CronService, // Move optional parameter to the end
+    cronService?: ICronService, // Move optional parameter to the end
   ) {
     this.subscriptionRepository = subscriptionRepository;
     this.tokenService = tokenService;
@@ -96,7 +100,7 @@ export class SubscriptionService {
     // Find subscription by token
     const subscription = await this.subscriptionRepository.findByToken(token);
     if (!subscription) {
-      throw new SubscriptionNotFoundError();
+      throw new SubscriptionNotFoundError(); // Use the declared variable
     }
 
     // Validate token
@@ -167,7 +171,7 @@ export class SubscriptionService {
     // Find subscription by token
     const subscription = await this.subscriptionRepository.findByToken(token);
     if (!subscription) {
-      throw new SubscriptionNotFoundError();
+      throw new SubscriptionNotFoundError(); // Use the declared variable
     }
 
     // Validate token

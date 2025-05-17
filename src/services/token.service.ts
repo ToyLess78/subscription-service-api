@@ -1,10 +1,11 @@
 import { randomBytes } from "crypto";
 import { ExpiredTokenError, InvalidTokenError } from "../utils/errors";
+import type { ITokenService } from "../core/interfaces/services.interface";
 
 /**
  * Token service for generating and validating tokens
  */
-export class TokenService {
+export class TokenService implements ITokenService {
   private tokenExpirySeconds: number;
 
   constructor(tokenExpirySeconds: number) {

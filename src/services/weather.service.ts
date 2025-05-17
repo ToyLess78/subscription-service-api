@@ -9,10 +9,7 @@ import {
 } from "../utils/errors";
 import { ErrorMessage } from "../constants/error-message.enum";
 import { HttpStatus } from "../constants/http-status.enum";
-
-export interface IWeatherService {
-  getCurrentWeather(city: string): Promise<WeatherData>;
-}
+import type { IWeatherService } from "../core/interfaces/services.interface";
 
 interface ErrorResponseData {
   error?: {

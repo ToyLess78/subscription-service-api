@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
-import type { SubscriptionService } from "../services/subscription.service";
+import type { ISubscriptionService } from "../core/interfaces/services.interface";
 import {
   type CreateSubscriptionDto,
   SubscriptionFrequency,
@@ -20,9 +20,9 @@ interface RequestWithToken {
  * Controller for subscription endpoints
  */
 export class SubscriptionController {
-  private subscriptionService: SubscriptionService;
+  private subscriptionService: ISubscriptionService;
 
-  constructor(subscriptionService: SubscriptionService) {
+  constructor(subscriptionService: ISubscriptionService) {
     this.subscriptionService = subscriptionService;
   }
 

@@ -1,15 +1,10 @@
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { ApiPath } from "../constants/api-path.enum";
-import { subscriptionSchema } from "../models/subscription.schema";
-import { weatherSchema } from "../models/weather.schema";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 
 const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
-  // Import fastifySwagger dynamically to avoid TypeScript errors
-  // Use require instead of dynamic imports to avoid type issues
-  const fastifySwagger = require("@fastify/swagger");
-  const fastifySwaggerUi = require("@fastify/swagger-ui");
-
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
@@ -38,9 +33,8 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
       ],
       components: {
         schemas: {
-          // Register only the required schemas for Swagger documentation
-          Subscription: subscriptionSchema,
-          Weather: weatherSchema,
+          // Only expose Weather and Subscription schemas
+          // The actual schema definitions are registered via the schemas plugin
         },
       },
     },

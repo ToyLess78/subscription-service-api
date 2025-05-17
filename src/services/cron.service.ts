@@ -1,12 +1,15 @@
 import { CronJob } from "cron";
 import type { PrismaClientType } from "../db/prisma.service";
 import {
-  SubscriptionFrequency,
+  type SubscriptionFrequency,
   SubscriptionStatus,
 } from "../models/subscription.model";
-import type { WeatherService } from "./weather.service";
-import type { EmailService } from "./email.service";
-import { addHours, addDays, isAfter } from "date-fns";
+import type {
+  IWeatherService,
+  IEmailService,
+  ICronService,
+} from "../core/interfaces/services.interface";
+import { TimingUtils } from "../utils/timing.utils";
 
 // Define types for Prisma queries
 interface SubscriptionQueryResult {
@@ -26,12 +29,12 @@ interface SubscriptionQueryResult {
 /**
  * Service for managing cron jobs for scheduled email delivery
  */
-export class CronService {
+export class CronService implements ICronService {
   // Change from private to protected to allow access in plugin
   protected jobs: Map<string, CronJob> = new Map();
   private prisma: PrismaClientType;
-  private weatherService: WeatherService;
-  private emailService: EmailService;
+  private weatherService: IWeatherService;
+  private emailService: IEmailService;
   private logger: {
     info: (msg: string) => void;
     error: (msg: string, err?: Error) => void;
@@ -39,8 +42,8 @@ export class CronService {
 
   constructor(
     prisma: PrismaClientType,
-    weatherService: WeatherService,
-    emailService: EmailService,
+    weatherService: IWeatherService,
+    emailService: IEmailService,
     logger: {
       info: (msg: string) => void;
       error: (msg: string, err?: Error) => void;
@@ -103,12 +106,12 @@ export class CronService {
       this.cancelJob(subscriptionId);
 
       // Determine cron expression based on frequency
-      const cronExpression = this.getCronExpression(
+      const cronExpression = TimingUtils.getCronExpression(
         subscription.frequency as SubscriptionFrequency,
       );
 
       // Calculate next scheduled time
-      const nextScheduledAt = this.calculateNextScheduledTime(
+      const nextScheduledAt = TimingUtils.calculateNextScheduledTime(
         subscription.frequency as SubscriptionFrequency,
         subscription.lastSentAt,
       );
@@ -187,13 +190,9 @@ export class CronService {
       }
 
       // Check if it's time to send the email
-      const now = new Date();
-      if (
-        subscription.nextScheduledAt &&
-        isAfter(subscription.nextScheduledAt, now)
-      ) {
+      if (!TimingUtils.isTimeToSend(subscription.nextScheduledAt)) {
         this.logger.info(
-          `Not yet time to send email for subscription ${subscriptionId}, next scheduled at ${subscription.nextScheduledAt.toISOString()}`,
+          `Not yet time to send email for subscription ${subscriptionId}, next scheduled at ${subscription.nextScheduledAt?.toISOString()}`,
         );
         return;
       }
@@ -214,7 +213,7 @@ export class CronService {
       );
 
       // Calculate next scheduled time
-      const nextScheduledAt = this.calculateNextScheduledTime(
+      const nextScheduledAt = TimingUtils.calculateNextScheduledTime(
         subscription.frequency as SubscriptionFrequency,
       );
 
@@ -222,7 +221,7 @@ export class CronService {
       await this.prisma.subscription.update({
         where: { id: subscriptionId },
         data: {
-          lastSentAt: now,
+          lastSentAt: new Date(),
           nextScheduledAt,
         },
       });
@@ -236,52 +235,6 @@ export class CronService {
         `Failed to execute job for subscription ${subscriptionId}`,
         err,
       );
-    }
-  }
-
-  /**
-   * Get cron expression for a frequency
-   * @param frequency Subscription frequency
-   * @returns Cron expression
-   */
-  private getCronExpression(frequency: SubscriptionFrequency): string {
-    switch (frequency) {
-      case SubscriptionFrequency.HOURLY:
-        // Run at the beginning of each hour
-        return "0 * * * *";
-      case SubscriptionFrequency.DAILY:
-        // Run at 8:00 AM each day
-        return "0 8 * * *";
-      default:
-        // Default to daily at 8:00 AM
-        return "0 8 * * *";
-    }
-  }
-
-  /**
-   * Calculate next scheduled time based on frequency
-   * @param frequency Subscription frequency
-   * @param lastSentAt Last sent time (optional)
-   * @returns Next scheduled time
-   */
-  private calculateNextScheduledTime(
-    frequency: SubscriptionFrequency,
-    lastSentAt?: Date | null,
-  ): Date {
-    const now = new Date();
-
-    // If no last sent time, schedule immediately
-    if (!lastSentAt) {
-      return now;
-    }
-
-    switch (frequency) {
-      case SubscriptionFrequency.HOURLY:
-        return addHours(lastSentAt, 1);
-      case SubscriptionFrequency.DAILY:
-        return addDays(lastSentAt, 1);
-      default:
-        return addDays(lastSentAt, 1);
     }
   }
 

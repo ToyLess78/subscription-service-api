@@ -12,11 +12,12 @@ import {
 } from "../utils/errors";
 import { ErrorMessage } from "../constants/error-message.enum";
 import { PrismaService, type SubscriptionModel } from "../db/prisma.service";
+import type { ISubscriptionRepository } from "../core/interfaces/services.interface";
 
 /**
  * Repository for subscription data access using Prisma
  */
-export class SubscriptionRepository {
+export class SubscriptionRepository implements ISubscriptionRepository {
   private prisma: PrismaClient;
   private logger: {
     info: (msg: string) => void;
