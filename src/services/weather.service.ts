@@ -1,14 +1,12 @@
 import axios from "axios";
 import type { WeatherData, WeatherApiResponse } from "../models/weather.model";
-import { WEATHER_API } from "../constants/weather-api.constants";
+import { ErrorMessage, HttpStatus, WEATHER_API } from "../core/constants";
 import {
   WeatherApiError,
   InvalidCityError,
   UnauthorizedError,
   InternalServerError,
 } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
-import { HttpStatus } from "../constants/http-status.enum";
 import type { IWeatherService } from "../core/interfaces/services.interface";
 
 interface ErrorResponseData {

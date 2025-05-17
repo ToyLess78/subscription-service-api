@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import weatherRoutes from "./weather.routes";
 import subscriptionRoutes from "./subscription.routes";
-import { ApiPath } from "../constants/api-path.enum";
+import { ApiPath } from "../core/constants";
 import cronRoutes from "./cron.routes";
 import { healthCheckResponseSchema } from "../schemas";
 

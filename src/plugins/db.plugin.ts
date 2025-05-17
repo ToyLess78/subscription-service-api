@@ -1,9 +1,9 @@
 import type { FastifyPluginAsync } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import type { IDatabaseClient } from "../db/database.interface";
-import { PrismaService } from "../db/prisma.service";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { DatabaseFactory, DatabaseType } from "../db/database.factory";
 
 const execAsync = promisify(exec);
 
@@ -31,7 +31,12 @@ const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (
   };
 
   // Initialize the database client
-  const db: IDatabaseClient = new PrismaService(logger);
+  const dbType =
+    process.env.NODE_ENV === "test" ? DatabaseType.MEMORY : DatabaseType.PRISMA;
+  const db: IDatabaseClient = DatabaseFactory.createDatabaseClient(
+    dbType,
+    logger,
+  );
 
   // Make the db client available through the fastify instance
   fastify.decorate("db", db);

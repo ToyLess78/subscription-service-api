@@ -6,7 +6,7 @@ import {
   type SubscriptionResponseDto,
 } from "../models/subscription.model";
 import { BadRequestError, SubscriptionNotFoundError } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
+import { ErrorMessage } from "../core/constants";
 import type {
   ISubscriptionService,
   ISubscriptionRepository,

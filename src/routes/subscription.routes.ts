@@ -5,7 +5,7 @@ import { SubscriptionRepository } from "../repositories/subscription.repository"
 import { TokenService } from "../services/token.service";
 import { EmailService } from "../services/email.service";
 import { WeatherService } from "../services/weather.service";
-import { ApiPath } from "../constants/api-path.enum";
+import { ApiPath } from "../core/constants";
 import {
   createSubscriptionSchema,
   subscriptionResponseSchema,

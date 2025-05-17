@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { WeatherController } from "../controllers/weather.controller";
 import { WeatherService } from "../services/weather.service";
 import { weatherRequestSchema } from "../schemas";
-import { ApiPath } from "../constants/api-path.enum";
+import { ApiPath } from "../core/constants";
 
 const weatherRoutes: FastifyPluginAsync = async (fastify) => {
   // Create service and controller instances

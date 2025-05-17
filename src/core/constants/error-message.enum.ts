@@ -21,26 +21,16 @@ export enum ErrorMessage {
   WEATHER_API_UNAUTHORIZED = "Invalid or unauthorized API key",
   FAILED_TO_FETCH_WEATHER = "Failed to fetch weather data",
 
-  // Configuration errors
-  MISSING_ENV_VARIABLE = "Missing required environment variable",
-  INVALID_ENV_VARIABLE = "Invalid environment variable",
-
-  // Route errors
-  ROUTE_NOT_FOUND = "Route not found",
-
   // Database errors
   DATABASE_CONNECTION_ERROR = "Failed to connect to database",
   DATABASE_QUERY_ERROR = "Database query failed",
   DATABASE_URL_MISSING = "Database URL is missing or invalid",
   DATABASE_CONNECTION_TIMEOUT = "Database connection timed out",
-  DATABASE_ALREADY_CONNECTED = "Database is already connected",
   DATABASE_NOT_CONNECTED = "Database is not connected",
   DATABASE_DISCONNECTION_ERROR = "Failed to disconnect from database",
 
   // Email errors
   EMAIL_SENDING_ERROR = "Failed to send email",
-  INVALID_EMAIL = "Invalid email address",
-  EMAIL_TEMPLATE_ERROR = "Failed to render email template",
 
   // Subscription errors
   SUBSCRIPTION_ALREADY_EXISTS = "Subscription already exists",

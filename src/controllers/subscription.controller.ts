@@ -5,7 +5,7 @@ import {
   SubscriptionFrequency,
 } from "../models/subscription.model";
 import { BadRequestError } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
+import { ErrorMessage } from "../core/constants";
 
 /**
  * Request with token parameter

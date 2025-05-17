@@ -14,7 +14,7 @@ import loggerPlugin from "./plugins/logger.plugin";
 import startupPlugin from "./plugins/startup.plugin";
 import errorMiddleware from "./middlewares/error.middleware";
 import routes from "./routes";
-import { buildApiPath } from "./constants/api-path.enum";
+import { buildApiPath } from "./core/constants";
 import cronPlugin from "./plugins/cron.plugin";
 
 // Create Fastify instance with logger configuration
@@ -94,5 +94,4 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-// Start the server
 start();

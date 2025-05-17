@@ -1,5 +1,5 @@
 import { AppError } from "./app-error";
-import { HttpStatus } from "../constants/http-status";
+import { HttpStatus } from "../constants";
 
 /**
  * Bad request error (400)

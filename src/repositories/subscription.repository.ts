@@ -10,7 +10,7 @@ import {
   SubscriptionExistsError,
   SubscriptionNotFoundError,
 } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
+import { ErrorMessage } from "../core/constants";
 import { PrismaService, type SubscriptionModel } from "../db/prisma.service";
 import type { ISubscriptionRepository } from "../core/interfaces/services.interface";
 

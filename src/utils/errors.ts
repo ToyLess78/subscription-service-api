@@ -1,5 +1,4 @@
-import { ErrorMessage } from "../constants/error-message.enum";
-import { HttpStatus } from "../constants/http-status.enum";
+import { ErrorMessage, HttpStatus } from "../core/constants";
 
 // Base application error class
 export class AppError extends Error {
