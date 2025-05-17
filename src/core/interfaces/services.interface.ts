@@ -96,4 +96,5 @@ export interface ISubscriptionRepository {
   ): Promise<Subscription>;
   findAllActive(): Promise<Subscription[]>;
   findDueForSending(): Promise<Subscription[]>;
+  delete(id: string): Promise<boolean>;
 }

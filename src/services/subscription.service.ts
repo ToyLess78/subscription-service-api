@@ -5,7 +5,7 @@ import {
   SubscriptionStatus,
   type SubscriptionResponseDto,
 } from "../models/subscription.model";
-import { BadRequestError } from "../utils/errors";
+import { BadRequestError, SubscriptionNotFoundError } from "../utils/errors";
 import { ErrorMessage } from "../constants/error-message.enum";
 import type {
   ISubscriptionService,
@@ -15,7 +15,6 @@ import type {
   IWeatherService,
   ICronService,
 } from "../core/interfaces/services.interface";
-import { SubscriptionNotFoundError } from "../core/errors";
 
 /**
  * Service for subscription business logic
@@ -100,7 +99,7 @@ export class SubscriptionService implements ISubscriptionService {
     // Find subscription by token
     const subscription = await this.subscriptionRepository.findByToken(token);
     if (!subscription) {
-      throw new SubscriptionNotFoundError(); // Use the declared variable
+      throw new SubscriptionNotFoundError();
     }
 
     // Validate token
@@ -171,19 +170,33 @@ export class SubscriptionService implements ISubscriptionService {
     // Find subscription by token
     const subscription = await this.subscriptionRepository.findByToken(token);
     if (!subscription) {
-      throw new SubscriptionNotFoundError(); // Use the declared variable
+      throw new SubscriptionNotFoundError();
     }
 
     // Validate token
     this.tokenService.validateToken(token, subscription.tokenExpiry);
 
-    // Update subscription
-    const updatedSubscription = await this.subscriptionRepository.update(
-      subscription.id,
-      {
-        status: SubscriptionStatus.UNSUBSCRIBED,
-      },
-    );
+    // Store subscription data before deletion for response and email
+    const subscriptionData = {
+      id: subscription.id,
+      email: subscription.email,
+      city: subscription.city,
+      frequency: subscription.frequency,
+      status: SubscriptionStatus.UNSUBSCRIBED,
+      createdAt: subscription.createdAt,
+    };
+
+    // Cancel cron job for this subscription if cronService is available
+    if (this.cronService) {
+      this.cronService.cancelJob(subscription.id);
+      this.logger.info(
+        `Cancelled cron job for subscription ${subscription.id}`,
+      );
+    }
+
+    // Delete the subscription from the database
+    await this.subscriptionRepository.delete(subscription.id);
+    this.logger.info(`Deleted subscription ${subscription.id} from database`);
 
     // Send unsubscribe confirmation email
     await this.emailService.sendUnsubscribeConfirmationEmail(
@@ -191,15 +204,7 @@ export class SubscriptionService implements ISubscriptionService {
       subscription.city,
     );
 
-    // Cancel cron job for this subscription if cronService is available
-    if (this.cronService) {
-      this.cronService.cancelJob(updatedSubscription.id);
-      this.logger.info(
-        `Cancelled cron job for subscription ${updatedSubscription.id}`,
-      );
-    }
-
-    return this.mapToResponseDto(updatedSubscription);
+    return subscriptionData;
   }
 
   /**

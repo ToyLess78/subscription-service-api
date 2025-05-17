@@ -333,6 +333,40 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   /**
+   * Delete a subscription
+   * @param id Subscription ID
+   * @returns True if deleted successfully
+   * @throws {SubscriptionNotFoundError} If subscription not found
+   * @throws {DatabaseError} If database operation fails
+   */
+  async delete(id: string): Promise<boolean> {
+    try {
+      const result = await this.prisma.subscription.delete({
+        where: {
+          id,
+        },
+      });
+
+      return !!result;
+    } catch (error) {
+      // Handle record not found
+      if (
+        error instanceof Error &&
+        error.message.includes("Record to delete does not exist")
+      ) {
+        throw new SubscriptionNotFoundError();
+      }
+
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to delete subscription", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
+    }
+  }
+
+  /**
    * Map a Prisma subscription to a Subscription object
    * @param prismaSubscription Prisma subscription
    * @returns Subscription object
