@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { ApiPath } from "../constants/api-path.enum";
+import { ApiPath } from "../core/constants";
 
 export interface IRouteService {
   getRouteMap(): Record<string, string[]>;

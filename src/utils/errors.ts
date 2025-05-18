@@ -1,5 +1,4 @@
-import { ErrorMessage } from "../constants/error-message.enum";
-import { HttpStatus } from "../constants/http-status.enum";
+import { ErrorMessage, HttpStatus } from "../core/constants";
 
 // Base application error class
 export class AppError extends Error {
@@ -32,6 +31,9 @@ export class BadRequestError extends AppError {
     options?: { cause?: Error },
   ) {
     super(message, HttpStatus.BAD_REQUEST, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, BadRequestError.prototype);
   }
 }
 
@@ -41,6 +43,9 @@ export class NotFoundError extends AppError {
     options?: { cause?: Error },
   ) {
     super(message, HttpStatus.NOT_FOUND, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, NotFoundError.prototype);
   }
 }
 
@@ -50,6 +55,9 @@ export class UnauthorizedError extends AppError {
     options?: { cause?: Error },
   ) {
     super(message, HttpStatus.UNAUTHORIZED, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, UnauthorizedError.prototype);
   }
 }
 
@@ -59,6 +67,9 @@ export class ForbiddenError extends AppError {
     options?: { cause?: Error },
   ) {
     super(message, HttpStatus.FORBIDDEN, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, ForbiddenError.prototype);
   }
 }
 
@@ -71,6 +82,9 @@ export class InternalServerError extends AppError {
       isOperational: false,
       ...options,
     });
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, InternalServerError.prototype);
   }
 }
 
@@ -82,6 +96,9 @@ export class WeatherApiError extends AppError {
     options?: { cause?: Error },
   ) {
     super(message, statusCode, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, WeatherApiError.prototype);
   }
 }
 
@@ -92,6 +109,9 @@ export class InvalidCityError extends BadRequestError {
       ? `${ErrorMessage.INVALID_CITY}: ${city}`
       : ErrorMessage.INVALID_CITY;
     super(message, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, InvalidCityError.prototype);
   }
 }
 
@@ -102,6 +122,9 @@ export class DatabaseError extends AppError {
     options?: { cause?: Error },
   ) {
     super(message, HttpStatus.INTERNAL_SERVER_ERROR, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, DatabaseError.prototype);
   }
 }
 
@@ -112,6 +135,9 @@ export class EmailError extends AppError {
     options?: { cause?: Error },
   ) {
     super(message, HttpStatus.INTERNAL_SERVER_ERROR, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, EmailError.prototype);
   }
 }
 
@@ -123,6 +149,9 @@ export class SubscriptionError extends AppError {
     options?: { cause?: Error },
   ) {
     super(message, statusCode, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, SubscriptionError.prototype);
   }
 }
 
@@ -133,12 +162,18 @@ export class SubscriptionExistsError extends SubscriptionError {
       HttpStatus.CONFLICT,
       options,
     );
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, SubscriptionExistsError.prototype);
   }
 }
 
 export class SubscriptionNotFoundError extends SubscriptionError {
   constructor(options?: { cause?: Error }) {
     super(ErrorMessage.SUBSCRIPTION_NOT_FOUND, HttpStatus.NOT_FOUND, options);
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, SubscriptionNotFoundError.prototype);
   }
 }
 
@@ -149,6 +184,9 @@ export class InvalidTokenError extends SubscriptionError {
       HttpStatus.BAD_REQUEST,
       options,
     );
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, InvalidTokenError.prototype);
   }
 }
 
@@ -159,5 +197,8 @@ export class ExpiredTokenError extends SubscriptionError {
       HttpStatus.BAD_REQUEST,
       options,
     );
+
+    // Set the prototype explicitly for each error class
+    Object.setPrototypeOf(this, ExpiredTokenError.prototype);
   }
 }

@@ -1,8 +1,8 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
-import type { IWeatherService } from "../services/weather.service";
+import type { IWeatherService } from "../core/interfaces/services.interface";
 import type { WeatherRequestDto } from "../models/weather.model";
 import { BadRequestError } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
+import { ErrorMessage } from "../core/constants";
 
 export interface IWeatherController {
   getCurrentWeather(

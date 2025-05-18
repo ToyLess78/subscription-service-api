@@ -3,7 +3,7 @@ import type {
   DatabaseConnectionStatus,
 } from "./database.interface";
 import { DatabaseError } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
+import { ErrorMessage } from "../core/constants";
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
@@ -315,8 +315,7 @@ export class PrismaService implements IDatabaseClient {
       }
 
       // Execute the query using Prisma's $queryRawUnsafe
-      const result = await this.prisma.$queryRawUnsafe<T[]>(query, ...params);
-      return result;
+      return await this.prisma.$queryRawUnsafe<T[]>(query, ...params);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Query execution failed", err);

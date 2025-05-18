@@ -4,6 +4,7 @@ import { CronService } from "../services/cron.service";
 import { WeatherService } from "../services/weather.service";
 import { EmailService } from "../services/email.service";
 import type { PrismaService, PrismaClientType } from "../db/prisma.service";
+import type { ICronService } from "../core/interfaces/services.interface";
 
 const cronPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
   // Create logger adapter
@@ -30,7 +31,7 @@ const cronPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
   );
 
   // Create cron service with proper typing
-  const cronService = new CronService(
+  const cronService: ICronService = new CronService(
     prisma as PrismaClientType,
     weatherService,
     emailService,
@@ -75,6 +76,6 @@ export default fastifyPlugin(cronPlugin);
 // Type declaration for the fastify instance with cron
 declare module "fastify" {
   interface FastifyInstance {
-    cron: CronService;
+    cron: ICronService;
   }
 }

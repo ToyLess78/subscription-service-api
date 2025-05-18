@@ -10,13 +10,14 @@ import {
   SubscriptionExistsError,
   SubscriptionNotFoundError,
 } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
+import { ErrorMessage } from "../core/constants";
 import { PrismaService, type SubscriptionModel } from "../db/prisma.service";
+import type { ISubscriptionRepository } from "../core/interfaces/services.interface";
 
 /**
  * Repository for subscription data access using Prisma
  */
-export class SubscriptionRepository {
+export class SubscriptionRepository implements ISubscriptionRepository {
   private prisma: PrismaClient;
   private logger: {
     info: (msg: string) => void;
@@ -324,6 +325,40 @@ export class SubscriptionRepository {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Failed to find subscriptions due for sending", err);
+      throw new DatabaseError(
+        `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
+        { cause: err },
+      );
+    }
+  }
+
+  /**
+   * Delete a subscription
+   * @param id Subscription ID
+   * @returns True if deleted successfully
+   * @throws {SubscriptionNotFoundError} If subscription not found
+   * @throws {DatabaseError} If database operation fails
+   */
+  async delete(id: string): Promise<boolean> {
+    try {
+      const result = await this.prisma.subscription.delete({
+        where: {
+          id,
+        },
+      });
+
+      return !!result;
+    } catch (error) {
+      // Handle record not found
+      if (
+        error instanceof Error &&
+        error.message.includes("Record to delete does not exist")
+      ) {
+        throw new SubscriptionNotFoundError();
+      }
+
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error("Failed to delete subscription", err);
       throw new DatabaseError(
         `${ErrorMessage.DATABASE_QUERY_ERROR}: ${err.message}`,
         { cause: err },

@@ -4,7 +4,7 @@ import type {
   DatabaseConnectionOptions,
 } from "./database.interface";
 import { DatabaseError } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
+import { ErrorMessage } from "../core/constants";
 
 /**
  * In-memory storage for simulating a database
@@ -166,12 +166,17 @@ export class DatabaseService implements IDatabaseClient {
         });
         return [] as T[];
       } else if (
-        query.trim().toUpperCase().startsWith("SELECT name FROM migrations")
+        query.trim().toUpperCase().startsWith("SELECT") &&
+        query.includes("FROM migrations")
       ) {
         // Handle migration selects
-        return this.db.migrations.map((m) => ({
-          name: m.name,
-        })) as unknown as T[];
+        if (query.includes("name")) {
+          return this.db.migrations.map((m) => ({
+            name: m.name,
+          })) as unknown as T[];
+        }
+        // Return all migration data if not specifically selecting name
+        return this.db.migrations as unknown as T[];
       } else if (
         query.trim().toUpperCase().startsWith("INSERT INTO subscriptions")
       ) {

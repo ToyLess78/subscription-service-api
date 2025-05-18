@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
+import type { IEmailService } from "../core/interfaces/services.interface";
 
 const readFile = promisify(fs.readFile);
 
@@ -22,7 +23,7 @@ export interface EmailTemplateData {
 /**
  * Email service for sending emails
  */
-export class EmailService {
+export class EmailService implements IEmailService {
   private resend: Resend | null;
   private fromEmail: string;
   private baseUrl: string;

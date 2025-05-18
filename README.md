@@ -28,7 +28,7 @@ This project follows clean architecture principles, with clear separation of con
 
 - Node.js 16+
 - pnpm
-- PostgreSQL database (or use Railway)
+- PostgreSQL database
 
 ### Installation
 
@@ -120,7 +120,7 @@ This script will:
 
 Alternatively, if you want to keep your data and just apply schema changes:
 
-```bash
+```
 npx prisma migrate dev --name fix_schema
 ```
 
@@ -130,6 +130,39 @@ npx prisma migrate dev --name fix_schema
 - `POST /api/v1/subscribe` - Subscribe to weather updates
 - `GET /api/v1/confirm/:token` - Confirm subscription
 - `GET /api/v1/unsubscribe/:token` - Unsubscribe from updates
+
+## Scheduled Email Delivery
+
+The API includes a robust cron-based system for sending scheduled weather updates to subscribers:
+
+### Features
+
+- Automatic scheduling based on subscription frequency (hourly, daily)
+- Efficient execution with tracking of last sent and next scheduled times
+- No duplicate emails - each subscription is tracked individually
+- Graceful handling of server restarts with job persistence
+
+### How It Works
+
+1. When a user confirms their subscription, a cron job is scheduled based on their chosen frequency
+2. The system tracks when emails were last sent and when they should be sent next
+3. At the scheduled time, the system fetches the latest weather data and sends an email
+4. If the server restarts, all jobs are automatically rescheduled
+
+### Manual Testing
+
+You can manually trigger a weather update email for testing:
+
+```bash
+curl -X POST http://localhost:3000/api/v1/cron/trigger/:subscription_id
+```
+
+Replace `:subscription_id` with the actual subscription ID.
+
+### Cron Expressions
+
+- Hourly updates: `0 * * * *` (At minute 0 of every hour)
+- Daily updates: `0 8 * * *` (At 8:00 AM every day)
 
 ## Development
 

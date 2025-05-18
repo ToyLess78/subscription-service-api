@@ -5,38 +5,41 @@ import {
   SubscriptionStatus,
   type SubscriptionResponseDto,
 } from "../models/subscription.model";
-import type { SubscriptionRepository } from "../repositories/subscription.repository";
-import type { TokenService } from "./token.service";
-import type { EmailService } from "./email.service";
-import type { WeatherService } from "./weather.service";
 import { BadRequestError, SubscriptionNotFoundError } from "../utils/errors";
-import { ErrorMessage } from "../constants/error-message.enum";
-import type { CronService } from "./cron.service";
+import { ErrorMessage } from "../core/constants";
+import type {
+  ISubscriptionService,
+  ISubscriptionRepository,
+  ITokenService,
+  IEmailService,
+  IWeatherService,
+  ICronService,
+} from "../core/interfaces/services.interface";
 
 /**
  * Service for subscription business logic
  */
-export class SubscriptionService {
-  private subscriptionRepository: SubscriptionRepository;
-  private tokenService: TokenService;
-  private emailService: EmailService;
-  private weatherService: WeatherService;
+export class SubscriptionService implements ISubscriptionService {
+  private subscriptionRepository: ISubscriptionRepository;
+  private tokenService: ITokenService;
+  private emailService: IEmailService;
+  private weatherService: IWeatherService;
   private logger: {
     info: (msg: string) => void;
     error: (msg: string, err?: Error) => void;
   };
-  private cronService?: CronService; // Make it optional for backward compatibility
+  private cronService?: ICronService; // Make it optional for backward compatibility
 
   constructor(
-    subscriptionRepository: SubscriptionRepository,
-    tokenService: TokenService,
-    emailService: EmailService,
-    weatherService: WeatherService,
+    subscriptionRepository: ISubscriptionRepository,
+    tokenService: ITokenService,
+    emailService: IEmailService,
+    weatherService: IWeatherService,
     logger: {
       info: (msg: string) => void;
       error: (msg: string, err?: Error) => void;
     },
-    cronService?: CronService, // Move optional parameter to the end
+    cronService?: ICronService, // Move optional parameter to the end
   ) {
     this.subscriptionRepository = subscriptionRepository;
     this.tokenService = tokenService;
@@ -102,8 +105,8 @@ export class SubscriptionService {
     // Validate token
     this.tokenService.validateToken(token, subscription.tokenExpiry);
 
-    // Generate new token for unsubscribe functionality
-    const { token: newToken, expiry } = this.tokenService.generateToken();
+    // Generate new token for unsubscribe functionality with no expiry
+    const { token: newToken, expiry } = this.tokenService.generateToken(true);
 
     // Update subscription
     const updatedSubscription = await this.subscriptionRepository.update(
@@ -170,16 +173,30 @@ export class SubscriptionService {
       throw new SubscriptionNotFoundError();
     }
 
-    // Validate token
-    this.tokenService.validateToken(token, subscription.tokenExpiry);
+    // Validate token as an unsubscribe token (skip expiry check)
+    this.tokenService.validateToken(token, subscription.tokenExpiry, true);
 
-    // Update subscription
-    const updatedSubscription = await this.subscriptionRepository.update(
-      subscription.id,
-      {
-        status: SubscriptionStatus.UNSUBSCRIBED,
-      },
-    );
+    // Store subscription data before deletion for response and email
+    const subscriptionData = {
+      id: subscription.id,
+      email: subscription.email,
+      city: subscription.city,
+      frequency: subscription.frequency,
+      status: SubscriptionStatus.UNSUBSCRIBED,
+      createdAt: subscription.createdAt,
+    };
+
+    // Cancel cron job for this subscription if cronService is available
+    if (this.cronService) {
+      this.cronService.cancelJob(subscription.id);
+      this.logger.info(
+        `Cancelled cron job for subscription ${subscription.id}`,
+      );
+    }
+
+    // Delete the subscription from the database
+    await this.subscriptionRepository.delete(subscription.id);
+    this.logger.info(`Deleted subscription ${subscription.id} from database`);
 
     // Send unsubscribe confirmation email
     await this.emailService.sendUnsubscribeConfirmationEmail(
@@ -187,15 +204,7 @@ export class SubscriptionService {
       subscription.city,
     );
 
-    // Cancel cron job for this subscription if cronService is available
-    if (this.cronService) {
-      this.cronService.cancelJob(updatedSubscription.id);
-      this.logger.info(
-        `Cancelled cron job for subscription ${updatedSubscription.id}`,
-      );
-    }
-
-    return this.mapToResponseDto(updatedSubscription);
+    return subscriptionData;
   }
 
   /**

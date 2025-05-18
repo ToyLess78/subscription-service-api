@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
+import { errorResponseSchema, successResponseSchema } from "../schemas";
 
 const cronRoutes: FastifyPluginAsync = async (fastify): Promise<void> => {
   // POST /api/v1/cron/trigger/:id endpoint
@@ -19,27 +20,9 @@ const cronRoutes: FastifyPluginAsync = async (fastify): Promise<void> => {
         required: ["id"],
       },
       response: {
-        200: {
-          description: "Job triggered successfully",
-          type: "object",
-          properties: {
-            message: { type: "string" },
-          },
-        },
-        404: {
-          description: "Subscription not found",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
-        },
-        500: {
-          description: "Server error",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
-        },
+        200: successResponseSchema,
+        404: errorResponseSchema,
+        500: errorResponseSchema,
       },
     },
     handler: async (request, reply) => {

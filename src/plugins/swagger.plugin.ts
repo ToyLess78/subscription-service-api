@@ -1,21 +1,17 @@
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import fastifyPlugin from "fastify-plugin";
-import { ApiPath } from "../constants/api-path.enum";
-import { subscriptionSchema } from "../models/subscription.schema";
-import { weatherSchema } from "../models/weather.schema";
-
+import { ApiPath } from "../core/constants";
+import fastifySwagger, { type SwaggerOptions } from "@fastify/swagger";
+import fastifySwaggerUi, {
+  type FastifySwaggerUiOptions,
+} from "@fastify/swagger-ui";
 const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
-  // Import fastifySwagger dynamically to avoid TypeScript errors
-  // Use require instead of dynamic imports to avoid type issues
-  const fastifySwagger = require("@fastify/swagger");
-  const fastifySwaggerUi = require("@fastify/swagger-ui");
-
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
         title: "Weather Subscription API",
         description:
-          "API for retrieving weather data and managing subscriptions",
+          "Weather API application that allows users to subscribe to weather updates for their city.",
         version: "1.0.0",
       },
       externalDocs: {
@@ -32,19 +28,18 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
             ]
           : [],
       tags: [
-        { name: "weather", description: "Weather related endpoints" },
-        { name: "subscription", description: "Subscription related endpoints" },
+        { name: "weather", description: "Weather forecast operations" },
+        {
+          name: "subscription",
+          description: "Subscription management operations",
+        },
         { name: "system", description: "System related endpoints" },
       ],
       components: {
-        schemas: {
-          // Register only the required schemas for Swagger documentation
-          Subscription: subscriptionSchema,
-          Weather: weatherSchema,
-        },
+        schemas: {},
       },
     },
-  });
+  } as SwaggerOptions);
 
   await fastify.register(fastifySwaggerUi, {
     routePrefix: ApiPath.DOCUMENTATION,
@@ -72,18 +67,18 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
     },
     staticCSP: true,
     transformStaticCSP: (header: string): string => header,
-  });
+  } as FastifySwaggerUiOptions);
 
   // Add a redirect from /api to the documentation but hide it from Swagger docs
   fastify.get("/api", {
     schema: {
       hide: true,
     },
-    handler: (_request, reply): Promise<void> => {
-      return reply.redirect(
-        302,
-        ApiPath.DOCUMENTATION,
-      ) as unknown as Promise<void>;
+    handler: async (
+      _request: FastifyRequest,
+      reply: FastifyReply,
+    ): Promise<void> => {
+      void reply.redirect(302, ApiPath.DOCUMENTATION);
     },
   });
 };

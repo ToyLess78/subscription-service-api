@@ -5,8 +5,11 @@ import { SubscriptionRepository } from "../repositories/subscription.repository"
 import { TokenService } from "../services/token.service";
 import { EmailService } from "../services/email.service";
 import { WeatherService } from "../services/weather.service";
-import { ApiPath } from "../constants/api-path.enum";
-import { SubscriptionFrequency } from "../models/subscription.model";
+import { ApiPath } from "../core/constants";
+import {
+  createSubscriptionSchema,
+  subscriptionResponseSchema,
+} from "../schemas";
 
 const subscriptionRoutes: FastifyPluginAsync = async (
   fastify,
@@ -51,65 +54,28 @@ const subscriptionRoutes: FastifyPluginAsync = async (
       summary: "Subscribe to weather updates",
       description:
         "Subscribe an email to receive weather updates for a specific city with chosen frequency.",
-      body: {
-        type: "object",
-        properties: {
-          email: {
-            type: "string",
-            format: "email",
-            description: "Email address to subscribe",
-          },
-          city: {
-            type: "string",
-            description: "City for weather updates",
-          },
-          frequency: {
-            type: "string",
-            enum: Object.values(SubscriptionFrequency),
-            description: "Frequency of updates (hourly or daily)",
-          },
-        },
-        required: ["email", "city", "frequency"],
-      },
+      body: createSubscriptionSchema,
       response: {
         200: {
           description: "Subscription successful. Confirmation email sent.",
           type: "object",
           properties: {
             message: { type: "string" },
-            subscription: {
-              type: "object",
-              properties: {
-                id: { type: "string" },
-                email: { type: "string" },
-                city: { type: "string" },
-                frequency: { type: "string" },
-                status: { type: "string" },
-                createdAt: { type: "string", format: "date-time" },
-              },
-            },
+            subscription: subscriptionResponseSchema,
           },
         },
         400: {
-          description: "Invalid input",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          description:
+            "Invalid input - Missing required fields or invalid data",
+          $ref: "errorResponse#",
         },
         409: {
-          description: "Email already subscribed",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          description: "Email already subscribed for this city",
+          $ref: "errorResponse#",
         },
         500: {
           description: "Server error",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          $ref: "errorResponse#",
         },
       },
     },
@@ -139,39 +105,20 @@ const subscriptionRoutes: FastifyPluginAsync = async (
           type: "object",
           properties: {
             message: { type: "string" },
-            subscription: {
-              type: "object",
-              properties: {
-                id: { type: "string" },
-                email: { type: "string" },
-                city: { type: "string" },
-                frequency: { type: "string" },
-                status: { type: "string" },
-                createdAt: { type: "string", format: "date-time" },
-              },
-            },
+            subscription: subscriptionResponseSchema,
           },
         },
         400: {
-          description: "Invalid token",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          description: "Invalid token or expired token",
+          $ref: "errorResponse#",
         },
         404: {
           description: "Token not found",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          $ref: "errorResponse#",
         },
         500: {
           description: "Server error",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          $ref: "errorResponse#",
         },
       },
     },
@@ -203,39 +150,20 @@ const subscriptionRoutes: FastifyPluginAsync = async (
           type: "object",
           properties: {
             message: { type: "string" },
-            subscription: {
-              type: "object",
-              properties: {
-                id: { type: "string" },
-                email: { type: "string" },
-                city: { type: "string" },
-                frequency: { type: "string" },
-                status: { type: "string" },
-                createdAt: { type: "string", format: "date-time" },
-              },
-            },
+            subscription: subscriptionResponseSchema,
           },
         },
         400: {
-          description: "Invalid token",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          description: "Invalid token or expired token",
+          $ref: "errorResponse#",
         },
         404: {
           description: "Token not found",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          $ref: "errorResponse#",
         },
         500: {
           description: "Server error",
-          type: "object",
-          properties: {
-            error: { type: "string" },
-          },
+          $ref: "errorResponse#",
         },
       },
     },

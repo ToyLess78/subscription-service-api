@@ -1,9 +1,8 @@
-
 /** @type {import('eslint').Linter.FlatConfig[]} */
 module.exports = [
   // Base ESLint configuration
   {
-    ignores: ["node_modules/**", "dist/**", "coverage/**", "**/*.js"],
+    ignores: ["node_modules/**", "dist/**", "coverage/**", "src/__tests__/*", "**/*.js", "jest.config.ts", "jest.config.d.ts"],
   },
   // TypeScript files configuration
   {
