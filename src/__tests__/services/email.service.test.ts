@@ -1,8 +1,11 @@
 import { EmailService } from "../../services/email.service";
 import { mockLogger } from "../mocks";
-import fs from "fs";
-import path from "path";
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
+
+// Define the type for Resend's response
+interface ResendEmailResponse {
+  id: string;
+}
 
 // Mock Resend
 jest.mock("resend", () => {
@@ -10,24 +13,35 @@ jest.mock("resend", () => {
     Resend: jest.fn().mockImplementation(() => {
       return {
         emails: {
-          send: jest.fn().mockResolvedValue({ id: "mock-email-id" }),
+          send: jest
+            .fn()
+            .mockReturnValue(Promise.resolve({ id: "mock-email-id" })),
         },
       };
     }),
   };
 });
 
-// Mock fs
-jest.mock("fs", () => ({
-  ...jest.requireActual("fs"),
-  readFile: jest.fn(),
-}));
+// Import fs and path before mocking to get their types
+import * as fs from "fs";
+import * as path from "path";
 
-// Mock path
-jest.mock("path", () => ({
-  ...jest.requireActual("path"),
-  join: jest.fn().mockReturnValue("/mock/path/to/template.html"),
-}));
+// Mock fs and path modules with proper type assertions
+jest.mock("fs", () => {
+  const actualFs = jest.requireActual("fs") as typeof fs;
+  return {
+    ...actualFs,
+    readFile: jest.fn(),
+  };
+});
+
+jest.mock("path", () => {
+  const actualPath = jest.requireActual("path") as typeof path;
+  return {
+    ...actualPath,
+    join: jest.fn().mockReturnValue("/mock/path/to/template.html"),
+  };
+});
 
 describe("EmailService", () => {
   let emailService: EmailService;
@@ -37,11 +51,15 @@ describe("EmailService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    emailService = new EmailService(apiKey, fromEmail, baseUrl, mockLogger);
 
     // Mock fs.readFile to return a template with placeholders
-    (fs.readFile as jest.Mock).mockImplementation((_, __, callback) => {
-      const template = `
+    (fs.readFile as unknown as jest.Mock).mockImplementation(
+      (
+        _path: string,
+        _encoding: string,
+        callback: (err: Error | null, data: string) => void,
+      ) => {
+        const template = `
         <!DOCTYPE html>
         <html>
         <body>
@@ -54,8 +72,11 @@ describe("EmailService", () => {
         </body>
         </html>
       `;
-      callback(null, template);
-    });
+        callback(null, template);
+      },
+    );
+
+    emailService = new EmailService(apiKey, fromEmail, baseUrl, mockLogger);
   });
 
   describe("sendConfirmationEmail", () => {
@@ -89,12 +110,15 @@ describe("EmailService", () => {
       const mockResendError = new Error("Resend API error");
       const mockResend = {
         emails: {
-          send: jest.fn().mockRejectedValue(mockResendError),
+          send: jest.fn().mockReturnValue(Promise.reject(mockResendError)),
         },
       };
 
-      // @ts-ignore - we're mocking the private property
-      emailService.resend = mockResend;
+      // Use Object.defineProperty to set the private property
+      Object.defineProperty(emailService, "resend", {
+        value: mockResend,
+        writable: true,
+      });
 
       await emailService.sendConfirmationEmail(to, token, city, frequency);
 

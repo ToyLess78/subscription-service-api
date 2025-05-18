@@ -3,14 +3,23 @@ import { mockLogger } from "../mocks";
 import {
   SubscriptionFrequency,
   SubscriptionStatus,
+  type Subscription,
 } from "../../models/subscription.model";
 import { BadRequestError, SubscriptionNotFoundError } from "../../utils/errors";
 import { ErrorMessage } from "../../core/constants";
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
+import type {
+  ISubscriptionRepository,
+  ITokenService,
+  IEmailService,
+  IWeatherService,
+  ICronService,
+} from "../../core/interfaces/services.interface";
+import type { WeatherData } from "../../models/weather.model";
 
 describe("SubscriptionService", () => {
-  // Mock dependencies
-  const mockSubscriptionRepository = {
+  // Mock dependencies with proper typing
+  const mockSubscriptionRepository: jest.Mocked<ISubscriptionRepository> = {
     create: jest.fn(),
     findByEmailAndCity: jest.fn(),
     findByToken: jest.fn(),
@@ -21,23 +30,23 @@ describe("SubscriptionService", () => {
     delete: jest.fn(),
   };
 
-  const mockTokenService = {
+  const mockTokenService: jest.Mocked<ITokenService> = {
     generateToken: jest.fn(),
     validateToken: jest.fn(),
   };
 
-  const mockEmailService = {
+  const mockEmailService: jest.Mocked<IEmailService> = {
     sendConfirmationEmail: jest.fn(),
     sendWelcomeEmail: jest.fn(),
     sendUnsubscribeConfirmationEmail: jest.fn(),
     sendWeatherUpdateEmail: jest.fn(),
   };
 
-  const mockWeatherService = {
+  const mockWeatherService: jest.Mocked<IWeatherService> = {
     getCurrentWeather: jest.fn(),
   };
 
-  const mockCronService = {
+  const mockCronService: jest.Mocked<ICronService> = {
     initializeJobs: jest.fn(),
     scheduleJob: jest.fn(),
     cancelJob: jest.fn(),
@@ -73,7 +82,7 @@ describe("SubscriptionService", () => {
       const expiry = new Date();
       mockTokenService.generateToken.mockReturnValue({ token, expiry });
 
-      const createdSubscription = {
+      const createdSubscription: Subscription = {
         id: "123",
         email: subscriptionData.email,
         city: subscriptionData.city,
@@ -139,7 +148,7 @@ describe("SubscriptionService", () => {
     it("should confirm a subscription successfully", async () => {
       // Arrange
       const token = "test-token";
-      const subscription = {
+      const subscription: Subscription = {
         id: "123",
         email: "test@example.com",
         city: "London",
@@ -160,7 +169,7 @@ describe("SubscriptionService", () => {
         expiry: newExpiry,
       });
 
-      const updatedSubscription = {
+      const updatedSubscription: Subscription = {
         ...subscription,
         status: SubscriptionStatus.CONFIRMED,
         token: newToken,
@@ -168,14 +177,15 @@ describe("SubscriptionService", () => {
       };
       mockSubscriptionRepository.update.mockResolvedValue(updatedSubscription);
 
-      mockWeatherService.getCurrentWeather.mockResolvedValue({
+      const weatherData: WeatherData = {
         city: "London",
         country: "UK",
         temperature: { celsius: 20, fahrenheit: 68 },
         humidity: 70,
         description: "Sunny",
         icon: "sun.png",
-      });
+      };
+      mockWeatherService.getCurrentWeather.mockResolvedValue(weatherData);
 
       // Act
       const result = await subscriptionService.confirmSubscription(token);
@@ -243,7 +253,7 @@ describe("SubscriptionService", () => {
     it("should unsubscribe successfully", async () => {
       // Arrange
       const token = "test-token";
-      const subscription = {
+      const subscription: Subscription = {
         id: "123",
         email: "test@example.com",
         city: "London",
@@ -268,6 +278,7 @@ describe("SubscriptionService", () => {
       expect(mockTokenService.validateToken).toHaveBeenCalledWith(
         token,
         subscription.tokenExpiry,
+        true,
       );
       expect(mockCronService.cancelJob).toHaveBeenCalledWith(subscription.id);
       expect(mockSubscriptionRepository.delete).toHaveBeenCalledWith(

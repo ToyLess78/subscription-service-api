@@ -1,5 +1,5 @@
 // Global test setup
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
