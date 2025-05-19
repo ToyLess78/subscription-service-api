@@ -105,8 +105,8 @@ export class SubscriptionService implements ISubscriptionService {
     // Validate token
     this.tokenService.validateToken(token, subscription.tokenExpiry);
 
-    // Generate new token for unsubscribe functionality
-    const { token: newToken, expiry } = this.tokenService.generateToken();
+    // Generate new token for unsubscribe functionality with no expiry
+    const { token: newToken, expiry } = this.tokenService.generateToken(true);
 
     // Update subscription
     const updatedSubscription = await this.subscriptionRepository.update(
@@ -173,8 +173,8 @@ export class SubscriptionService implements ISubscriptionService {
       throw new SubscriptionNotFoundError();
     }
 
-    // Validate token
-    this.tokenService.validateToken(token, subscription.tokenExpiry);
+    // Validate token as an unsubscribe token (skip expiry check)
+    this.tokenService.validateToken(token, subscription.tokenExpiry, true);
 
     // Store subscription data before deletion for response and email
     const subscriptionData = {

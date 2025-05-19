@@ -16,8 +16,12 @@ export interface IWeatherService {
  * Interface for token service
  */
 export interface ITokenService {
-  generateToken(): { token: string; expiry: Date };
-  validateToken(token: string, expiry: Date): void;
+  generateToken(noExpiry?: boolean): { token: string; expiry: Date };
+  validateToken(
+    token: string,
+    expiry: Date,
+    isUnsubscribeToken?: boolean,
+  ): void;
 }
 
 /**

@@ -14,11 +14,15 @@ export class TokenService implements ITokenService {
 
   /**
    * Generate a new token
+   * @param noExpiry Whether the token should never expire (for unsubscribe tokens)
    * @returns Token and expiry date
    */
-  generateToken(): { token: string; expiry: Date } {
+  generateToken(noExpiry = false): { token: string; expiry: Date } {
     const token = randomBytes(32).toString("hex");
-    const expiry = new Date(Date.now() + this.tokenExpirySeconds * 1000);
+    // For non-expiring tokens, set expiry date to a far future date (year 2100)
+    const expiry = noExpiry
+      ? new Date(4102444800000) // January 1, 2100
+      : new Date(Date.now() + this.tokenExpirySeconds * 1000);
     return { token, expiry };
   }
 
@@ -26,15 +30,17 @@ export class TokenService implements ITokenService {
    * Validate a token
    * @param token Token to validate
    * @param expiry Token expiry date
+   * @param isUnsubscribeToken Whether this is an unsubscribe token (optional expiry check)
    * @throws {InvalidTokenError} If token is invalid
    * @throws {ExpiredTokenError} If token has expired
    */
-  validateToken(token: string, expiry: Date): void {
+  validateToken(token: string, expiry: Date, isUnsubscribeToken = false): void {
     if (!token) {
       throw new InvalidTokenError();
     }
 
-    if (new Date() > expiry) {
+    // Skip expiration check for unsubscribe tokens
+    if (!isUnsubscribeToken && new Date() > expiry) {
       throw new ExpiredTokenError();
     }
   }
