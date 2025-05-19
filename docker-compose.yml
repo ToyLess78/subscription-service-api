@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: weather-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+      - HOST=0.0.0.0
+      - API_VERSION=${API_VERSION:-v1}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - PRETTY_LOGS=${PRETTY_LOGS:-false}
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-weather_api}?schema=public
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - EMAIL_FROM=${EMAIL_FROM:-onboarding@resend.dev}
+      # Set BASE_URL to the container's service name and port for internal communication
+      - BASE_URL=http://app:3000
+      - TOKEN_EXPIRY=${TOKEN_EXPIRY:-86400}
+      - CRON_ENABLED=${CRON_ENABLED:-true}
+    volumes:
+      - ./public:/app/public
+      - ./prisma:/app/prisma
+    networks:
+      - weather-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://0.0.0.0:3000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: weather-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-weather_api}
+    ports:
+      - "5433:5432"  # Changed from 5432:5432 to 5433:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - weather-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-weather_api}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  weather-network:
+    driver: bridge
