@@ -11,7 +11,7 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
       info: {
         title: "Weather Subscription API",
         description:
-          "API for retrieving weather data and managing subscriptions",
+          "Weather API application that allows users to subscribe to weather updates for their city.",
         version: "1.0.0",
       },
       externalDocs: {
