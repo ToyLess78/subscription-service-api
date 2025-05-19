@@ -11,4 +11,3 @@ export const resetAllMocks = (): void => {
   mockLogger.info.mockReset();
   mockLogger.error.mockReset();
 };
-
