@@ -167,7 +167,13 @@ export const errorResponseSchema = {
       type: "string",
       description: "Error message",
     },
+    details: {
+      type: "object",
+      description: "Additional error details (optional)",
+      additionalProperties: true,
+    },
   },
+  required: ["error"],
 };
 
 export const successResponseSchema = {

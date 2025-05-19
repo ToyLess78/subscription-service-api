@@ -9,7 +9,6 @@ import { ApiPath } from "../core/constants";
 import {
   createSubscriptionSchema,
   subscriptionResponseSchema,
-  errorResponseSchema,
 } from "../schemas";
 
 const subscriptionRoutes: FastifyPluginAsync = async (
@@ -42,7 +41,7 @@ const subscriptionRoutes: FastifyPluginAsync = async (
     emailService,
     weatherService,
     logger,
-    fastify.cron,
+    fastify.cron, // Pass the cron service as the last parameter
   );
   const subscriptionController = new SubscriptionController(
     subscriptionService,
@@ -65,9 +64,19 @@ const subscriptionRoutes: FastifyPluginAsync = async (
             subscription: subscriptionResponseSchema,
           },
         },
-        400: errorResponseSchema,
-        409: errorResponseSchema,
-        500: errorResponseSchema,
+        400: {
+          description:
+            "Invalid input - Missing required fields or invalid data",
+          $ref: "errorResponse#",
+        },
+        409: {
+          description: "Email already subscribed for this city",
+          $ref: "errorResponse#",
+        },
+        500: {
+          description: "Server error",
+          $ref: "errorResponse#",
+        },
       },
     },
     handler: subscriptionController.subscribe.bind(subscriptionController),
@@ -99,9 +108,18 @@ const subscriptionRoutes: FastifyPluginAsync = async (
             subscription: subscriptionResponseSchema,
           },
         },
-        400: errorResponseSchema,
-        404: errorResponseSchema,
-        500: errorResponseSchema,
+        400: {
+          description: "Invalid token or expired token",
+          $ref: "errorResponse#",
+        },
+        404: {
+          description: "Token not found",
+          $ref: "errorResponse#",
+        },
+        500: {
+          description: "Server error",
+          $ref: "errorResponse#",
+        },
       },
     },
     handler: subscriptionController.confirmSubscription.bind(
@@ -135,9 +153,18 @@ const subscriptionRoutes: FastifyPluginAsync = async (
             subscription: subscriptionResponseSchema,
           },
         },
-        400: errorResponseSchema,
-        404: errorResponseSchema,
-        500: errorResponseSchema,
+        400: {
+          description: "Invalid token or expired token",
+          $ref: "errorResponse#",
+        },
+        404: {
+          description: "Token not found",
+          $ref: "errorResponse#",
+        },
+        500: {
+          description: "Server error",
+          $ref: "errorResponse#",
+        },
       },
     },
     handler: subscriptionController.unsubscribe.bind(subscriptionController),

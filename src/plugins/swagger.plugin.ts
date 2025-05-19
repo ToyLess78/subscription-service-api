@@ -28,8 +28,11 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
             ]
           : [],
       tags: [
-        { name: "weather", description: "Weather related endpoints" },
-        { name: "subscription", description: "Subscription related endpoints" },
+        { name: "weather", description: "Weather forecast operations" },
+        {
+          name: "subscription",
+          description: "Subscription management operations",
+        },
         { name: "system", description: "System related endpoints" },
       ],
       components: {
