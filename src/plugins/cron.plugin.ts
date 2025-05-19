@@ -19,7 +19,6 @@ const cronPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
 
   // Get Prisma client
   const prismaService = fastify.db as PrismaService;
-  const prisma = prismaService.getPrismaClient();
 
   // Create services
   const weatherService = new WeatherService(fastify.config.WEATHER_API_KEY);
@@ -30,13 +29,41 @@ const cronPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
     logger,
   );
 
+  // Create a fallback cron service implementation
+  const fallbackCronService: ICronService = {
+    initializeJobs: async (): Promise<void> => {
+      logger.info("Using fallback cron service - jobs will not run");
+    },
+    scheduleJob: async (): Promise<void> => {
+      logger.info("Using fallback cron service - job not scheduled");
+    },
+    cancelJob: (): void => {
+      logger.info("Using fallback cron service - no job to cancel");
+    },
+    getJobIds: (): string[] => {
+      return [];
+    },
+    forceRunJob: async (): Promise<void> => {
+      logger.info("Using fallback cron service - cannot force run job");
+    },
+  };
+
   // Create cron service with proper typing
-  const cronService: ICronService = new CronService(
-    prisma as PrismaClientType,
-    weatherService,
-    emailService,
-    logger,
-  );
+  let cronService: ICronService;
+  try {
+    const prismaClient = prismaService.getPrismaClient();
+    cronService = new CronService(
+      prismaClient as PrismaClientType,
+      weatherService,
+      emailService,
+      logger,
+    );
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error("Failed to create cron service", err);
+    // Use the fallback implementation to prevent server startup failure
+    cronService = fallbackCronService;
+  }
 
   // Make the cron service available through the fastify instance
   fastify.decorate("cron", cronService);

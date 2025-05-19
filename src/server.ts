@@ -74,8 +74,11 @@ const start = async (): Promise<void> => {
     // Start the server
     await fastify.listen({
       port: Number.parseInt(fastify.config.PORT, 10),
-      host: fastify.config.HOST,
+      host: fastify.config.HOST || "0.0.0.0", // Ensure it uses 0.0.0.0 if HOST is not defined
     });
+
+    // Log the public URL
+    fastify.log.info(`Server available at: ${fastify.config.BASE_URL}`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

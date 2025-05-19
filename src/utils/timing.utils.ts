@@ -1,9 +1,6 @@
 import { addHours, addDays, isAfter } from "date-fns";
 import { SubscriptionFrequency } from "../models/subscription.model";
 
-/**
- * Utility functions for handling timing and scheduling
- */
 export class TimingUtils {
   /**
    * Get cron expression for a frequency

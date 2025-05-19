@@ -63,11 +63,15 @@ export class CronService implements ICronService {
       this.logger.info("Initializing cron jobs for active subscriptions...");
 
       // Get all confirmed subscriptions
-      const subscriptions = (await this.prisma.subscription.findMany({
+      const subscriptionsResult = await this.prisma.subscription.findMany({
         where: {
           status: SubscriptionStatus.CONFIRMED,
         },
-      })) as SubscriptionQueryResult[];
+      });
+
+      // Type assertion for the results
+      const subscriptions =
+        subscriptionsResult as unknown as SubscriptionQueryResult[];
 
       // Initialize jobs for each subscription
       for (const subscription of subscriptions) {
@@ -88,9 +92,13 @@ export class CronService implements ICronService {
   async scheduleJob(subscriptionId: string): Promise<void> {
     try {
       // Get subscription details
-      const subscription = (await this.prisma.subscription.findUnique({
+      const subscriptionResult = await this.prisma.subscription.findUnique({
         where: { id: subscriptionId },
-      })) as SubscriptionQueryResult | null;
+      });
+
+      // Type assertion for the result
+      const subscription =
+        subscriptionResult as unknown as SubscriptionQueryResult | null;
 
       if (
         !subscription ||
@@ -151,11 +159,19 @@ export class CronService implements ICronService {
    * @param subscriptionId Subscription ID
    */
   cancelJob(subscriptionId: string): void {
-    const job = this.jobs.get(subscriptionId);
-    if (job) {
-      job.stop();
-      this.jobs.delete(subscriptionId);
-      this.logger.info(`Cancelled job for subscription ${subscriptionId}`);
+    try {
+      const job = this.jobs.get(subscriptionId);
+      if (job) {
+        job.stop();
+        this.jobs.delete(subscriptionId);
+        this.logger.info(`Cancelled job for subscription ${subscriptionId}`);
+      }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error(
+        `Failed to cancel job for subscription ${subscriptionId}`,
+        err,
+      );
     }
   }
 
@@ -174,9 +190,13 @@ export class CronService implements ICronService {
   private async executeJob(subscriptionId: string): Promise<void> {
     try {
       // Get subscription details
-      const subscription = (await this.prisma.subscription.findUnique({
+      const subscriptionResult = await this.prisma.subscription.findUnique({
         where: { id: subscriptionId },
-      })) as SubscriptionQueryResult | null;
+      });
+
+      // Type assertion for the result
+      const subscription =
+        subscriptionResult as unknown as SubscriptionQueryResult | null;
 
       if (
         !subscription ||
@@ -243,6 +263,14 @@ export class CronService implements ICronService {
    * @param subscriptionId Subscription ID
    */
   async forceRunJob(subscriptionId: string): Promise<void> {
-    await this.executeJob(subscriptionId);
+    try {
+      await this.executeJob(subscriptionId);
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      this.logger.error(
+        `Failed to force run job for subscription ${subscriptionId}`,
+        err,
+      );
+    }
   }
 }

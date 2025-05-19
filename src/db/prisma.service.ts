@@ -1,13 +1,12 @@
 import type {
-  IDatabaseClient,
   DatabaseConnectionStatus,
+  IDatabaseClient,
 } from "./database.interface";
 import { DatabaseError } from "../utils/errors";
 import { ErrorMessage } from "../core/constants";
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
-import type { PrismaClient } from "@prisma/client";
 
 // Define event types for Prisma
 export interface PrismaQueryEvent {
@@ -32,8 +31,21 @@ export interface PrismaWarnEvent {
   target?: string;
 }
 
-// Define a more specific type for PrismaClient that includes our custom types
-export type PrismaClientType = PrismaClient & {
+// Define a more specific type for PrismaClient
+export interface PrismaClientType {
+  $connect: () => Promise<void>;
+  $disconnect: () => Promise<void>;
+  $queryRawUnsafe: <T>(query: string, ...params: unknown[]) => Promise<T>;
+  $on: <T extends "query" | "error" | "info" | "warn">(
+    eventType: T,
+    callback: T extends "query"
+      ? (event: PrismaQueryEvent) => void
+      : T extends "error"
+        ? (event: PrismaErrorEvent) => void
+        : T extends "info"
+          ? (event: PrismaInfoEvent) => void
+          : (event: PrismaWarnEvent) => void,
+  ) => void;
   subscription: {
     create: (args: {
       data: SubscriptionCreateInput;
@@ -48,18 +60,11 @@ export type PrismaClientType = PrismaClient & {
       where: Record<string, unknown>;
       data: SubscriptionUpdateInput;
     }) => Promise<SubscriptionModel>;
+    delete: (args: {
+      where: Record<string, unknown>;
+    }) => Promise<SubscriptionModel>;
   };
-  $on<T extends "query" | "error" | "info" | "warn">(
-    eventType: T,
-    callback: T extends "query"
-      ? (event: PrismaQueryEvent) => void
-      : T extends "error"
-        ? (event: PrismaErrorEvent) => void
-        : T extends "info"
-          ? (event: PrismaInfoEvent) => void
-          : (event: PrismaWarnEvent) => void,
-  ): void;
-};
+}
 
 // Define custom types for Subscription model
 export interface SubscriptionModel {
@@ -77,12 +82,15 @@ export interface SubscriptionModel {
 }
 
 // Define input types for Subscription operations
-export type SubscriptionCreateInput = Omit<
-  SubscriptionModel,
-  "id" | "createdAt" | "updatedAt"
-> & {
-  lastSentAt?: Date | null;
-  nextScheduledAt?: Date | null;
+export type SubscriptionCreateInput = {
+  email: string;
+  city: string;
+  frequency: string;
+  status: string;
+  token: string;
+  tokenExpiry: Date;
+  lastSentAt: Date | null;
+  nextScheduledAt: Date | null;
 };
 
 export type SubscriptionUpdateInput = Partial<SubscriptionModel>;
@@ -109,10 +117,23 @@ export class PrismaService implements IDatabaseClient {
 
     // Initialize Prisma client
     try {
-      // Import PrismaClient dynamically
-      const { PrismaClient } = require("@prisma/client") as {
-        PrismaClient: new (options: unknown) => PrismaClientType;
+      // Import PrismaClient dynamically with proper type assertions
+      const prismaModule = require("@prisma/client") as {
+        PrismaClient: new (options: {
+          log?: Array<{
+            level: "query" | "error" | "info" | "warn";
+            emit: "event";
+          }>;
+        }) => PrismaClientType;
       };
+
+      // Verify that PrismaClient exists before using it
+      if (!prismaModule || typeof prismaModule.PrismaClient !== "function") {
+        throw new Error("Invalid Prisma module structure");
+      }
+
+      const PrismaClient = prismaModule.PrismaClient;
+
       this.prisma = new PrismaClient({
         log: [
           { level: "query", emit: "event" },
@@ -187,24 +208,21 @@ export class PrismaService implements IDatabaseClient {
       try {
         // Import PrismaClient dynamically
         require("@prisma/client");
-      } catch (error) {
+      } catch (importError) {
         // If the error is about missing the Prisma client, generate it
-        if (
-          error instanceof Error &&
-          error.message.includes("Cannot find module")
-        ) {
+        const error = importError as Error;
+        if (error.message.includes("Cannot find module")) {
           this.logger.info("Prisma client not found. Generating...");
           try {
             // Generate the Prisma client
             execSync("npx prisma generate", { stdio: "inherit" });
             this.logger.info("Prisma client generated successfully");
           } catch (genError) {
-            this.logger.error(
-              "Failed to generate Prisma client",
+            const err =
               genError instanceof Error
                 ? genError
-                : new Error(String(genError)),
-            );
+                : new Error(String(genError));
+            this.logger.error("Failed to generate Prisma client", err);
             throw new Error(
               "Failed to generate Prisma client. Please run 'npx prisma generate' manually.",
             );

@@ -96,8 +96,10 @@ export class RouteService implements IRouteService {
       // Get the raw routes table from Fastify
       const routesTable = this.fastify.printRoutes();
 
-      // Log the raw routes table for simplicity and reliability
-      const baseUrl = `http://${this.fastify.config.HOST}:${this.fastify.config.PORT}`;
+      // Use BASE_URL from config instead of constructing URL from HOST and PORT
+      const baseUrl =
+        this.fastify.config.BASE_URL ||
+        `http://${this.fastify.config.HOST}:${this.fastify.config.PORT}`;
 
       this.fastify.log.info(`=== API Routes ===\n${routesTable}`);
       this.fastify.log.info(
