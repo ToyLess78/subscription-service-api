@@ -42,7 +42,7 @@ const subscriptionRoutes: FastifyPluginAsync = async (
     emailService,
     weatherService,
     logger,
-    fastify.cron, // Pass the cron service as the last parameter
+    fastify.cron,
   );
   const subscriptionController = new SubscriptionController(
     subscriptionService,

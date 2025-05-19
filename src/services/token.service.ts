@@ -8,7 +8,7 @@ import type { ITokenService } from "../core/interfaces/services.interface";
 export class TokenService implements ITokenService {
   private tokenExpirySeconds: number;
 
-  constructor(tokenExpirySeconds: number) {
+  constructor(tokenExpirySeconds = 86400) {
     this.tokenExpirySeconds = tokenExpirySeconds;
   }
 
