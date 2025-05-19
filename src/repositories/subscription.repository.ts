@@ -1,4 +1,3 @@
-import type { PrismaClient } from "@prisma/client";
 import type { IDatabaseClient } from "../db/database.interface";
 import type {
   Subscription,
@@ -11,14 +10,18 @@ import {
   SubscriptionNotFoundError,
 } from "../utils/errors";
 import { ErrorMessage } from "../core/constants";
-import { PrismaService, type SubscriptionModel } from "../db/prisma.service";
+import {
+  PrismaService,
+  type SubscriptionModel,
+  type PrismaClientType,
+} from "../db/prisma.service";
 import type { ISubscriptionRepository } from "../core/interfaces/services.interface";
 
 /**
  * Repository for subscription data access using Prisma
  */
 export class SubscriptionRepository implements ISubscriptionRepository {
-  private prisma: PrismaClient;
+  private prisma: PrismaClientType;
   private logger: {
     info: (msg: string) => void;
     error: (msg: string, err?: Error) => void;
@@ -35,8 +38,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
 
     // Get Prisma client from the database service
     if (dbClient instanceof PrismaService) {
-      // Use type assertion with a more specific type
-      this.prisma = dbClient.getPrismaClient() as unknown as PrismaClient;
+      this.prisma = dbClient.getPrismaClient();
     } else {
       throw new Error("Database service must be an instance of PrismaService");
     }
@@ -58,33 +60,40 @@ export class SubscriptionRepository implements ISubscriptionRepository {
         `Creating subscription for email=${subscription.email}, city=${subscription.city}`,
       );
 
+      // Create the subscription data with proper typing
+      const subscriptionData: {
+        email: string;
+        city: string;
+        frequency: string;
+        status: string;
+        token: string;
+        tokenExpiry: Date;
+        lastSentAt: Date | null;
+        nextScheduledAt: Date | null;
+      } = {
+        email: subscription.email,
+        city: subscription.city,
+        frequency: subscription.frequency,
+        status: subscription.status,
+        token: subscription.token,
+        tokenExpiry: subscription.tokenExpiry,
+        // Explicitly set to null if undefined
+        lastSentAt: subscription.lastSentAt ?? null,
+        nextScheduledAt: subscription.nextScheduledAt ?? null,
+      };
+
       // Create the subscription using Prisma
       const result = await this.prisma.subscription.create({
-        data: {
-          email: subscription.email,
-          city: subscription.city,
-          frequency: subscription.frequency,
-          status: subscription.status,
-          token: subscription.token,
-          tokenExpiry: subscription.tokenExpiry,
-          // Only include these fields if they exist in the input
-          ...(subscription.lastSentAt !== undefined && {
-            lastSentAt: subscription.lastSentAt,
-          }),
-          ...(subscription.nextScheduledAt !== undefined && {
-            nextScheduledAt: subscription.nextScheduledAt,
-          }),
-        },
+        data: subscriptionData,
       });
 
       // Map the result to a Subscription object
       return this.mapPrismaToSubscription(result as SubscriptionModel);
     } catch (error) {
       // Handle unique constraint violation
-      if (
-        error instanceof Error &&
-        error.message.includes("Unique constraint failed")
-      ) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("Unique constraint failed")) {
         throw new SubscriptionExistsError();
       }
 
@@ -210,10 +219,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       return this.mapPrismaToSubscription(result as SubscriptionModel);
     } catch (error) {
       // Handle record not found
-      if (
-        error instanceof Error &&
-        error.message.includes("Record to update not found")
-      ) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("Record to update not found")) {
         throw new SubscriptionNotFoundError();
       }
 
@@ -258,10 +266,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       return this.mapPrismaToSubscription(result as SubscriptionModel);
     } catch (error) {
       // Handle record not found
-      if (
-        error instanceof Error &&
-        error.message.includes("Record to update not found")
-      ) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("Record to update not found")) {
         throw new SubscriptionNotFoundError();
       }
 
@@ -287,8 +294,12 @@ export class SubscriptionRepository implements ISubscriptionRepository {
         },
       });
 
-      return results.map((result) =>
-        this.mapPrismaToSubscription(result as SubscriptionModel),
+      // Type assertion for the results
+      const typedResults = results as unknown as SubscriptionModel[];
+
+      // Use explicit mapping with type safety
+      return typedResults.map((result: SubscriptionModel) =>
+        this.mapPrismaToSubscription(result),
       );
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -319,8 +330,12 @@ export class SubscriptionRepository implements ISubscriptionRepository {
         where: whereCondition as unknown as Record<string, unknown>,
       });
 
-      return results.map((result) =>
-        this.mapPrismaToSubscription(result as SubscriptionModel),
+      // Type assertion for the results
+      const typedResults = results as unknown as SubscriptionModel[];
+
+      // Use explicit mapping with type safety
+      return typedResults.map((result: SubscriptionModel) =>
+        this.mapPrismaToSubscription(result),
       );
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -350,10 +365,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       return !!result;
     } catch (error) {
       // Handle record not found
-      if (
-        error instanceof Error &&
-        error.message.includes("Record to delete does not exist")
-      ) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("Record to delete does not exist")) {
         throw new SubscriptionNotFoundError();
       }
 
