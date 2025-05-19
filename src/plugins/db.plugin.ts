@@ -82,16 +82,16 @@ const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (
       routeOptions.url === "/api/v1/health" &&
       routeOptions.method === "GET"
     ) {
-      // Fix: Store the original handler
+      // Store the original handler
       const originalHandler = routeOptions.handler;
 
       // Replace the handler with one that includes database status
-      // Fix: Use a proper function to maintain 'this' context
+      // Use a proper function to maintain 'this' context
       routeOptions.handler = async function (
         request,
         reply,
       ): Promise<HealthCheckResponse> {
-        // Fix: Call the original handler with the correct context and cast the result
+        // Call the original handler with the correct context and cast the result
         const originalResponse = (await originalHandler.call(
           this,
           request,
@@ -99,7 +99,7 @@ const dbPlugin: FastifyPluginAsync<DbPluginOptions> = async (
         )) as HealthCheckResponse;
         const dbStatus = db.getStatus();
 
-        // Fix: Create a new response object with proper typing
+        // Create a new response object with proper typing
         return {
           status: originalResponse?.status || "ok",
           timestamp: originalResponse?.timestamp || new Date().toISOString(),

@@ -60,7 +60,7 @@ export class WeatherService implements IWeatherService {
         ) {
           throw new UnauthorizedError(ErrorMessage.WEATHER_API_UNAUTHORIZED);
         } else {
-          // Fix: Use ErrorMessage enum for the base message
+          // Use ErrorMessage enum for the base message
           const responseData = error.response.data as ErrorResponseData;
           const errorDetails = responseData?.error?.message
             ? `: ${responseData.error.message}`

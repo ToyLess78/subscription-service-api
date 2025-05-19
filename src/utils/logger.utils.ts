@@ -1,8 +1,4 @@
 /**
- * Utility functions for logging
- */
-
-/**
  * Represents a record with string keys and any type of values
  * This is a recursive type that allows for nested objects
  */

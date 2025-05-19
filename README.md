@@ -151,6 +151,28 @@ Alternatively, if you want to keep your data and just apply schema changes:
 npx prisma migrate dev --name fix_schema
 ```
 
+## Database Schema 📊
+
+The application uses a PostgreSQL database with the following schema:
+
+```mermaid
+
+erDiagram
+    subscriptions {
+        String id PK "UUID"
+        String email "User's email address"
+        String city "City for weather updates"
+        String frequency "hourly or daily"
+        String status "pending, confirmed, or unsubscribed"
+        String token "Unique token for confirmation/unsubscription"
+        DateTime token_expiry "When the token expires"
+        DateTime created_at "When the subscription was created"
+        DateTime updated_at "When the subscription was last updated"
+        DateTime last_sent_at "When the last update was sent (nullable)"
+        DateTime next_scheduled_at "When the next update is scheduled (nullable)"
+    }
+```
+
 ## API Endpoints 🔗
 
 * `GET /api/v1/weather` - Get weather for a city

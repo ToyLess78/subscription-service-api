@@ -30,7 +30,7 @@ export class TokenService implements ITokenService {
    * Validate a token
    * @param token Token to validate
    * @param expiry Token expiry date
-   * @param isUnsubscribeToken Whether this is an unsubscribe token (optional expiry check)
+   * @param isUnsubscribeToken Whether this is an unsubscribeToken (optional expiry check)
    * @throws {InvalidTokenError} If token is invalid
    * @throws {ExpiredTokenError} If token has expired
    */

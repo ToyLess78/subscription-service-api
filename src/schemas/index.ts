@@ -1,8 +1,3 @@
-/**
- * Centralized schema definitions for the application
- * This ensures consistency in schema definitions and makes it easier to update them
- */
-
 // Temperature schema
 export const temperatureSchema = {
   type: "object",
