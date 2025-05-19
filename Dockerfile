@@ -32,27 +32,8 @@ COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/public ./public
 COPY --from=build /app/package*.json ./
 
-# Create a more robust script to ensure server listens on 0.0.0.0
-RUN echo '#!/bin/bash\n\
-SERVER_FILES=$(find ./dist -type f -name "*.js" -exec grep -l "listen.*localhost\\|listen.*127.0.0.1" {} \\;)\n\
-if [ -n "$SERVER_FILES" ]; then\n\
-  echo "Found server files to patch:"\n\
-  for file in $SERVER_FILES; do\n\
-    echo "  - $file"\n\
-    # More comprehensive replacement patterns\n\
-    sed -i "s/\$$listen[^,]*,[ ]*['\\\"]\$$localhost\$$['\\\"]\$$/\\10.0.0.0\\2/g" "$file"\n\
-    sed -i "s/\$$listen[^,]*,[ ]*['\\\"]\$$127\\.0\\.0\\.1\$$['\\\"]\$$/\\10.0.0.0\\2/g" "$file"\n\
-    sed -i "s/\$$host[^,]*:[ ]*['\\\"]\$$localhost\$$['\\\"]\$$/\\10.0.0.0\\2/g" "$file"\n\
-    sed -i "s/\$$host[^,]*:[ ]*['\\\"]\$$127\\.0\\.0\\.1\$$['\\\"]\$$/\\10.0.0.0\\2/g" "$file"\n\
-    echo "  - Patched $file"\n\
-  done\n\
-else\n\
-  echo "No server files found that need patching."\n\
-fi\n\
-\n\
-# Start the application\n\
-exec node dist/server.js' > /app/start.sh
-
+# Copy the start script
+COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Generate Prisma client
@@ -65,5 +46,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://0.0.0.0:3000/api/v1/health || exit 1
 
-# Start the application using the new script
+# Start the application using the script
 CMD ["/app/start.sh"]

@@ -18,15 +18,17 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify): Promise<void> => {
         url: "https://swagger.io",
         description: "Find more info here",
       },
-      servers:
-        process.env.NODE_ENV === "development"
-          ? [
-              {
-                url: `http://${fastify.config.HOST}:${fastify.config.PORT}`,
-                description: "Dev server",
-              },
-            ]
-          : [],
+      servers: [
+        {
+          url:
+            fastify.config.BASE_URL ||
+            `http://${fastify.config.HOST}:${fastify.config.PORT}`,
+          description:
+            fastify.config.NODE_ENV === "production"
+              ? "Production server"
+              : "Dev server",
+        },
+      ],
       tags: [
         { name: "weather", description: "Weather forecast operations" },
         {

@@ -29,8 +29,11 @@ This project follows clean architecture principles, with clear separation of con
 * Node.js 16+
 * pnpm
 * PostgreSQL database
+* Docker and Docker Compose (for containerized setup)
 
 ### Installation
+
+#### Local Development Setup
 
 1. Clone the repository
 2. Install dependencies:
@@ -45,6 +48,7 @@ Create a `.env` file with the following variables:
 
 ```
 DATABASE_URL=postgresql://username:password@localhost:5432/weather_api?schema=public
+WEATHER_API_KEY=your_weather_api_key
 RESEND_API_KEY=your_resend_api_key
 EMAIL_FROM=onboarding@resend.dev
 BASE_URL=http://localhost:3000
@@ -85,6 +89,83 @@ pnpm dev
 pnpm build
 pnpm start
 ```
+
+### Docker Container Setup 🐳
+
+The application can be run in a containerized environment using Docker and Docker Compose.
+
+#### Prerequisites for Docker Setup
+
+* Docker
+* Docker Compose
+
+#### Starting the Containerized Application
+
+1. Make sure you have a `.env` file with the required environment variables (see above).
+
+2. Build and start the containers:
+
+```bash
+docker-compose up -d
+```
+
+This command will:
+- Build the application container
+- Start a PostgreSQL database container
+- Set up the network between them
+- Apply database migrations
+- Start the application on port 3000
+
+3. To check if the containers are running:
+
+```bash
+docker-compose ps
+```
+
+4. View logs from the containers:
+
+```bash
+docker-compose logs -f
+```
+
+5. To stop the containers:
+
+```bash
+docker-compose down
+```
+
+#### Container Environment Variables
+
+The Docker setup uses these environment variables (with defaults):
+
+- `NODE_ENV`: Set to `production` by default
+- `PORT`: Set to `3000` by default
+- `HOST`: Set to `0.0.0.0` by default
+- `API_VERSION`: Set to `v1` by default
+- `LOG_LEVEL`: Set to `info` by default
+- `PRETTY_LOGS`: Set to `false` by default
+- `WEATHER_API_KEY`: Required, no default
+- `DATABASE_URL`: Constructed from database credentials
+- `RESEND_API_KEY`: Optional, for email functionality
+- `EMAIL_FROM`: Set to `onboarding@resend.dev` by default
+- `BASE_URL`: Set to `http://localhost:3000` by default
+- `SWAGGER_BASE_URL`: Set to `http://localhost:3000` by default
+- `TOKEN_EXPIRY`: Set to `86400` (24 hours) by default
+- `CRON_ENABLED`: Set to `true` by default
+
+#### Database Container Environment Variables
+
+- `POSTGRES_USER`: Set to `postgres` by default
+- `POSTGRES_PASSWORD`: Set to `password` by default
+- `POSTGRES_DB`: Set to `weather_api` by default
+
+#### Accessing the Containerized Application
+
+Once the containers are running, you can access:
+
+- API: `http://localhost:3000/api/v1`
+- Swagger Documentation: `http://localhost:3000/documentation`
+- Health Check: `http://localhost:3000/api/v1/health`
 
 ## API Documentation 📚
 
@@ -158,19 +239,19 @@ The application uses a PostgreSQL database with the following schema:
 ```mermaid
 
 erDiagram
-    subscriptions {
-        String id PK "UUID"
-        String email "User's email address"
-        String city "City for weather updates"
-        String frequency "hourly or daily"
-        String status "pending, confirmed, or unsubscribed"
-        String token "Unique token for confirmation/unsubscription"
-        DateTime token_expiry "When the token expires"
-        DateTime created_at "When the subscription was created"
-        DateTime updated_at "When the subscription was last updated"
-        DateTime last_sent_at "When the last update was sent (nullable)"
-        DateTime next_scheduled_at "When the next update is scheduled (nullable)"
-    }
+subscriptions {
+String id PK "UUID"
+String email "User's email address"
+String city "City for weather updates"
+String frequency "hourly or daily"
+String status "pending, confirmed, or unsubscribed"
+String token "Unique token for confirmation/unsubscription"
+DateTime token_expiry "When the token expires"
+DateTime created_at "When the subscription was created"
+DateTime updated_at "When the subscription was last updated"
+DateTime last_sent_at "When the last update was sent (nullable)"
+DateTime next_scheduled_at "When the next update is scheduled (nullable)"
+}
 ```
 
 ## API Endpoints 🔗

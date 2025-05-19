@@ -24,8 +24,10 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-weather_api}?schema=public
       - RESEND_API_KEY=${RESEND_API_KEY}
       - EMAIL_FROM=${EMAIL_FROM:-onboarding@resend.dev}
-      # Set BASE_URL to the container's service name and port for internal communication
-      - BASE_URL=http://app:3000
+      # Set BASE_URL to the public-facing URL
+      - BASE_URL=${BASE_URL:-http://localhost:3000}
+      # Add a public-facing URL for Swagger UI to use
+      - SWAGGER_BASE_URL=${SWAGGER_BASE_URL:-http://localhost:3000}
       - TOKEN_EXPIRY=${TOKEN_EXPIRY:-86400}
       - CRON_ENABLED=${CRON_ENABLED:-true}
     volumes:
